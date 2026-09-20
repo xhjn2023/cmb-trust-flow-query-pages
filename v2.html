@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>招行云信托保全 · 业务员流程查询（节点状态版）</title>
+<style>
+:root{
+  --brand:#0052D9; --brand-light:#3B7DF8; --brand-bg:#E7ECFB;
+  --page:#F3F4F6; --card:#FFFFFF;
+  --t1:#1D2129; --t2:#4E5969; --t3:#86909C; --t4:#A6A6A6;
+  --line:#F0F0F0; --line-2:#E7EBF0; --border:#DDDDDD; --dot-off:#C9CDD4;
+  --success:#2BA471; --success-bg:#E8F5EE;
+  --warn:#E37318; --warn-bg:#FDF3E6;
+  --danger:#D54941; --danger-bg:#FDECEE; --danger-line:#F7C9C6;
+  --input:#F3F4F6;
+  --font-cn:"Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --font-num:"Inter","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#viewport{position:relative;width:375px;height:812px;transform-origin:center center;}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--page);box-shadow:0 24px 60px rgba(15,23,42,.22);}
+
+.screen{
+  position:absolute;top:0;left:0;width:375px;height:812px;
+  display:flex;flex-direction:column;background:var(--page);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateX(24px);
+  transition:opacity .28s ease,transform .28s ease,visibility .28s;
+}
+.screen.active{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0);}
+.screen.leaving{transform:translateX(-24px);}
+
+.statusbar{height:62px;flex:0 0 62px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;}
+.statusbar .time{font-family:var(--font-num);font-size:15px;font-weight:600;color:var(--t1);}
+.navbar{height:44px;flex:0 0 44px;padding:0 8px;display:flex;align-items:center;gap:4px;background:#fff;}
+.nav-back{width:24px;height:24px;flex:0 0 24px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;}
+.nav-title{flex:1;text-align:center;font-size:17px;font-weight:600;color:var(--t1);}
+.nav-spacer{width:24px;height:24px;flex:0 0 24px;}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.scroll::-webkit-scrollbar{width:0;height:0;}
+.card{background:var(--card);border-radius:12px;padding:16px;}
+.sec-title{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sec-title .t{font-size:14px;font-weight:600;color:var(--t1);}
+.sec-title .c{font-size:11px;color:var(--t4);}
+.divider{height:1px;background:var(--line);}
+.hint{font-size:11px;color:var(--t4);line-height:16px;}
+.tag{height:22px;border-radius:4px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;white-space:nowrap;flex:0 0 auto;background:var(--brand-bg);color:var(--brand);}
+.tag.warn,.tag.brand,.tag.ok,.tag.gray,.tag.danger{background:var(--brand-bg);color:var(--brand);}
+
+/* ---------- S1 ---------- */
+.qcard{background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.qrow{display:flex;align-items:center;gap:10px;}
+.qinput{flex:1;height:44px;border-radius:22px;background:#F5F6F7;display:flex;align-items:center;gap:8px;padding:0 16px;min-width:0;}
+.qinput svg{flex:0 0 16px;opacity:.45;}
+.qinput input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:14px;color:var(--t1);width:100%;min-width:0;}
+.qinput input::placeholder{color:var(--t4);}
+.form-card{display:flex;flex-direction:column;gap:14px;}
+.form-title{font-size:14px;font-weight:600;color:var(--t1);}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:4px;}
+.field-label em{font-style:normal;font-size:11px;color:var(--t4);}
+.field-label .req{color:var(--danger);}
+.input{height:40px;border-radius:8px;background:var(--input);display:flex;align-items:center;padding:0 12px;}
+.input.primary{background:#fff;border:1px solid var(--brand);}
+.input input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:13px;color:var(--t1);width:100%;}
+.input input::placeholder{color:var(--t4);}
+.input input.num{font-family:var(--font-num);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{height:30px;border-radius:15px;padding:0 14px;background:var(--input);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:400;color:var(--t2);border:none;cursor:pointer;transition:background .18s,color .18s;font-family:var(--font-cn);white-space:nowrap;}
+.chip.on{background:var(--brand);color:#fff;font-weight:500;}
+.recent{display:flex;flex-direction:column;gap:12px;}
+.fbtn{height:40px;flex:0 0 auto;padding:0 14px;border-radius:20px;background:#fff;border:1px solid var(--brand);color:var(--brand);font-size:14px;font-weight:500;display:flex;align-items:center;gap:4px;font-family:var(--font-cn);cursor:pointer;transition:background .18s;}
+.fbtn:active{background:var(--brand-bg);}
+.fbtn.on{background:var(--brand-bg);}
+.fpanel{background:#fff;border-radius:14px;padding:14px;display:none;flex-direction:column;gap:12px;}
+.fpanel.open{display:flex;}
+.fpanel .fp-title{display:flex;align-items:center;justify-content:space-between;}
+.fpanel .fp-title .t{font-size:13px;font-weight:600;color:var(--t1);}
+.fpanel .fp-title .clr{font-size:12px;color:var(--brand);background:none;border:none;cursor:pointer;font-family:var(--font-cn);padding:0;}
+.frow{display:flex;align-items:center;gap:8px;}
+.frow .fk{font-size:12px;color:var(--t3);flex:0 0 56px;}
+.frow input,.frow select{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--border);outline:none;background:var(--input);font-size:12px;color:var(--t1);font-family:var(--font-cn);-webkit-appearance:none;appearance:none;}
+.frow .wave{font-size:12px;color:var(--t4);flex:0 0 auto;}
+.fempty{padding:24px 0;text-align:center;font-size:12px;color:var(--t4);}
+.rcard{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:box-shadow .18s;}
+.rcard:active{box-shadow:0 2px 10px rgba(29,33,41,.08);}
+.rcard .top{display:flex;align-items:center;gap:8px;}
+.rcard .no{font-family:var(--font-num);font-size:14px;font-weight:600;color:var(--t1);}
+.rcard .top .tag{margin-left:auto;}
+.rcard .mid{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.rcard .mode{font-size:14px;font-weight:600;color:var(--t1);line-height:20px;}
+.rcard .kv{display:flex;flex-wrap:wrap;row-gap:8px;}
+.rcard .kv .cell{width:50%;display:flex;gap:6px;font-size:12px;min-width:0;}
+.rcard .kv .cell.full{width:100%;}
+.rcard .kv .k{color:var(--t4);flex:0 0 auto;}
+.rcard .kv .v{color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;}
+.rcard .kv .cell.full .v{white-space:normal;word-break:break-all;line-height:17px;}
+.entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border-radius:12px;background:var(--brand-bg);cursor:pointer;}
+.entry .l{display:flex;flex-direction:column;gap:3px;}
+.entry .t{font-size:13px;font-weight:600;color:var(--brand);}
+.entry .s{font-size:11px;color:var(--brand);opacity:.75;}
+.entry .arrow{font-size:16px;color:var(--brand);}
+.actionbar{flex:0 0 auto;padding:12px;display:flex;align-items:center;gap:12px;background:#fff;border-top:1px solid var(--border);}
+.btn{height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-cn);font-size:15px;border:none;cursor:pointer;transition:opacity .18s;}
+.btn:active{opacity:.82;}
+.btn-reset{width:103px;flex:0 0 103px;background:#fff;border:1px solid var(--border);color:var(--t2);font-weight:500;}
+.btn-primary{flex:1;background:var(--brand);color:#fff;font-weight:600;}
+.btn-outline{flex:1;background:#fff;border:1px solid var(--brand);color:var(--brand);font-weight:500;}
+.btn-fixed{width:120px;flex:0 0 120px;background:var(--brand);color:#fff;font-weight:600;}
+
+/* ---------- S2 ---------- */
+.ov-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ov-no{font-family:var(--font-num);font-size:16px;font-weight:600;color:var(--t1);}
+.tasklist{display:flex;flex-direction:column;gap:8px;}
+.tcard{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--input);border:1px solid transparent;cursor:pointer;transition:background .18s,border-color .18s;}
+.tcard:active{background:var(--brand-bg);border-color:var(--brand);}
+.tcard .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tcard .n{font-size:13px;font-weight:600;color:var(--t1);}
+.tcard .m{font-family:var(--font-num);font-size:11px;color:var(--t4);}
+.tcard .cur{font-size:11px;color:var(--t2);line-height:16px;}
+.tcard .cur.warn{color:var(--danger);}
+.tcard .arw{font-size:18px;color:var(--t4);flex:0 0 auto;}
+.timeline{display:flex;flex-direction:column;gap:2px;}
+.tl-node{display:flex;gap:12px;}
+.tl-col{width:14px;flex:0 0 14px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.tl-dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px;}
+.tl-dot.done{background:var(--success);}
+.tl-dot.current{background:var(--success);}
+.tl-dot.fail{background:var(--danger);}
+.tl-dot.cancel{background:var(--t4);}
+.tl-dot.todo{background:#fff;border:2px solid var(--dot-off);}
+.tl-line{width:2px;height:30px;flex:0 0 30px;background:var(--success);}
+.tl-line.off{background:var(--line-2);}
+.tl-right{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:12px;}
+.tl-right .t{font-size:13px;font-weight:600;color:var(--t1);}
+.tl-right .t.cur{color:var(--brand);}
+.tl-right .t.fail{color:var(--danger);}
+.tl-right .t.cancel{color:var(--t3);}
+.tl-right .t.todo{color:var(--t2);}
+.tl-right .d{font-size:11px;color:var(--t4);line-height:16px;}
+.tl-right .d.cur{color:var(--success);opacity:.75;}
+.rule{display:flex;flex-direction:column;gap:8px;}
+.rule .body{font-size:11px;color:var(--t2);line-height:19px;white-space:pre-line;}
+
+/* ---------- 联系人 ---------- */
+.contact{display:flex;flex-direction:column;gap:12px;}
+.ct-row{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;flex:0 0 36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;}
+.avatar.a1{background:var(--brand-bg);color:var(--brand);}
+.avatar.a2{background:var(--success-bg);color:var(--success);}
+.avatar.a3{background:var(--warn-bg);color:var(--warn);}
+.avatar.a4{background:var(--input);color:var(--t2);}
+.ct-row .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ct-row .n{font-size:13px;font-weight:500;color:var(--t1);}
+.ct-row .o{font-size:11px;color:var(--t4);}
+.tel{height:28px;border-radius:14px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-num);font-size:11px;font-weight:500;text-decoration:none;flex:0 0 auto;}
+.tel.t1{background:var(--brand-bg);color:var(--brand);}
+.tel.t2{background:var(--success-bg);color:var(--success);}
+.tel.t3{background:var(--warn-bg);color:var(--warn);}
+.tel.t4{background:var(--input);color:var(--t2);}
+
+/* ---------- S3 保单字段 ---------- */
+
+.agroup{display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--input);border-radius:12px;}
+.agroup + .agroup{margin-top:14px;}
+.agroup-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;
+  background:#fff;border:1px dashed rgba(0,82,217,.4);}
+.agroup-head .no{font-size:12px;font-weight:600;color:var(--brand);font-family:var(--mono);}
+.agroup-head .tm{font-size:10px;color:var(--t4);}
+.agroup-head .l{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.tasklist .tcard{margin:0;}
+.agroup .tcard{background:#fff;border-color:var(--line-2);}
+.agroup .tcard:active{background:var(--brand-bg);border-color:var(--brand);}
+/* ---------- S3 ---------- */
+.info-card{display:flex;flex-direction:column;gap:12px;}
+.kv{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.kv .k{font-size:13px;color:var(--t3);flex:0 0 auto;}
+.kv .v{font-size:13px;font-weight:500;color:var(--t1);text-align:right;}
+.kv .v.mute{color:var(--t4);font-weight:400;}
+
+/* ---------- S4 卡点诊断 ---------- */
+.block-card{border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;
+  background:var(--danger-bg);border:1px solid var(--danger);}
+.block-card.w{background:var(--warn-bg);border-color:var(--warn);}
+.block-card.b{background:var(--brand-bg);border-color:var(--brand);}
+.block-card.g{background:var(--success-bg);border-color:var(--success);}
+.block-card.n{background:var(--input);border-color:var(--border);}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.block-title{font-size:18px;font-weight:600;color:var(--danger);}
+.block-card.w .block-title{color:var(--warn);}
+.block-card.b .block-title{color:var(--brand);}
+.block-card.g .block-title{color:var(--success);}
+.block-card.n .block-title{color:var(--t2);}
+.pbar{height:6px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden;}
+.pbar i{display:block;height:6px;border-radius:3px;background:var(--danger);}
+.block-card.w .pbar i{background:var(--warn);}
+.mt-list{display:flex;flex-direction:column;gap:10px;}
+.mt-item{display:flex;align-items:flex-start;gap:8px;}
+.mt-box{width:14px;height:14px;flex:0 0 14px;border-radius:3px;margin-top:2px;border:1.5px solid var(--danger);background:#fff;}
+.block-card.w .mt-box{border-color:var(--warn);}
+.mt-box.done{background:var(--success);border-color:var(--success);}
+.mt-text{font-size:12px;line-height:17px;color:var(--danger);flex:1;}
+.block-card.w .mt-text{color:var(--warn);}
+.block-card.b .mt-text{color:var(--brand);}
+.block-card.n .mt-text{color:var(--t2);}
+.block-card.g .mt-text{color:var(--success);}
+.block-card.b .mt-box{border-color:var(--brand);}
+.block-card.n .mt-box{border-color:var(--t3);}
+.block-card.g .mt-box{border-color:var(--success);}
+.mt-text.done{color:var(--t3);}
+.guide{display:flex;flex-direction:column;gap:12px;}
+.g-step{display:flex;gap:10px;}
+.g-num{width:20px;height:20px;flex:0 0 20px;border-radius:10px;background:var(--brand);color:#fff;font-family:var(--font-num);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+.g-num.warn{background:var(--danger);}
+.g-text{font-size:12px;line-height:19px;color:var(--t2);flex:1;}
+.g-text.warn{color:var(--danger);}
+.rec{display:flex;flex-direction:column;gap:12px;}
+.rec-item{display:flex;gap:10px;}
+.rec-col{width:10px;flex:0 0 10px;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:4px;}
+.rec-dot{width:10px;height:10px;flex:0 0 10px;border-radius:5px;}
+.rec-line{width:2px;flex:1;min-height:26px;background:var(--line-2);}
+.rec-right{flex:1;display:flex;flex-direction:column;gap:3px;}
+.rec-right .t{font-size:12px;font-weight:500;color:var(--t1);}
+.rec-right .m{font-size:11px;color:var(--t4);line-height:16px;}
+.rec-right .f{font-size:11px;color:var(--success);line-height:16px;}
+
+/* ---------- S5 状态字典 ---------- */
+.searchbar{flex:0 0 auto;padding:12px;background:#fff;}
+.searchbox{height:36px;border-radius:18px;background:var(--input);display:flex;align-items:center;gap:8px;padding:0 14px;}
+.searchbox input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:13px;color:var(--t1);}
+.searchbox input::placeholder{color:var(--t4);}
+.chipbar{flex:0 0 auto;display:flex;gap:8px;padding:0 16px 12px;background:#fff;overflow-x:auto;}
+.chipbar::-webkit-scrollbar{height:0;}
+.chipbar .chip{height:28px;border-radius:14px;padding:0 12px;font-size:12px;}
+.kb-list{display:flex;flex-direction:column;gap:10px;}
+.kb-item{background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;border:1px solid transparent;transition:border-color .18s;}
+.kb-item.open{border-color:var(--brand);}
+.kb-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.kb-head .l{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.kb-head .t{font-size:13px;font-weight:600;color:var(--t1);}
+.kb-head .n{font-size:11px;color:var(--t4);}
+.kb-body{display:none;flex-direction:column;gap:8px;}
+.kb-item.open .kb-body{display:flex;}
+.kb-quote{background:#F7F8FA;border-radius:6px;padding:10px;font-size:11px;line-height:18px;color:var(--t2);}
+.kb-line{display:flex;gap:6px;align-items:flex-start;}
+.kb-line .k{font-size:11px;color:var(--t4);flex:0 0 auto;}
+.kb-line .v{font-size:11px;line-height:18px;color:var(--t2);flex:1;}
+.kb-line .v strong{font-weight:500;color:var(--t1);}
+.kb-foot{background:var(--brand-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;}
+.kb-foot .t{font-size:12px;font-weight:600;color:var(--brand);}
+.kb-foot .b{font-size:11px;line-height:17px;color:var(--brand);opacity:.8;}
+
+/* ---------- Toast ---------- */
+.toast{position:absolute;left:50%;bottom:96px;transform:translate(-50%,8px);background:rgba(0,0,0,.78);color:#fff;font-size:13px;line-height:18px;padding:10px 16px;border-radius:8px;max-width:300px;text-align:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility .2s;z-index:30;}
+.tl-detail{margin-top:2px;align-self:flex-start;height:22px;padding:0 10px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;line-height:20px;font-family:var(--font-cn);cursor:pointer;}
+.rvmodal{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:0 24px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:40;}
+.rvmodal.show{opacity:1;visibility:visible;}
+.rvcard{width:100%;background:#fff;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px rgba(15,23,42,.24);}
+.rvhead{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:600;color:var(--t1);}
+.rvclose{border:none;background:none;font-size:14px;color:var(--t3);cursor:pointer;padding:0;line-height:1;}
+.rv-reason{display:flex;flex-direction:column;gap:4px;}
+.rv-reason .k{font-size:12px;color:var(--t3);}
+.rv-reason .v{font-size:13px;color:var(--t1);line-height:20px;background:#FFF7E8;border-radius:6px;padding:8px 10px;}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<div id="viewport">
+<div id="stage">
+
+<!-- ============ S1 保单查询页 ============ -->
+<section class="screen active" id="s1">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar"><div class="nav-spacer"></div><div class="nav-title">招行信托保全查询</div><div class="nav-spacer"></div></div>
+
+  <div class="scroll">
+    <div class="qcard">
+      <div class="qrow">
+        <div class="qinput">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#86909C" stroke-width="1.4"/><path d="M11 11L14 14" stroke="#86909C" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="fKey" type="text" placeholder="请输入保单号 / 投保人证件号" autocomplete="off">
+        </div>
+        <button class="fbtn" id="btnFilter">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 2.5h11L8.6 7.6v3.2L5.4 12.4V7.6L1.5 2.5z" stroke="#0052D9" stroke-width="1.3" stroke-linejoin="round"/></svg>筛选
+        </button>
+      </div>
+    </div>
+
+    <div class="fpanel" id="fPanel">
+      <div class="fp-title"><span class="t">筛选条件</span><button class="clr" id="btnFClear">重置</button></div>
+      <div class="frow">
+        <span class="fk">申请日期</span>
+        <input type="date" id="fDateStart">
+        <span class="wave">至</span>
+        <input type="date" id="fDateEnd">
+      </div>
+      <div class="frow">
+        <span class="fk">保全状态</span>
+        <select id="fStatus"><option value="all">全部状态</option></select>
+      </div>
+      <div class="frow">
+        <span class="fk">业务类型</span>
+        <select id="fBiz"><option value="all">全部类型</option></select>
+      </div>
+    </div>
+
+    <div class="card recent" id="idResults" style="display:none;"></div>
+
+    <div class="card recent">
+      <div class="form-title">最近查询</div>
+      <div id="recentList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S2 保单任务列表 ============ -->
+<section class="screen" id="s2">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s1"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">保单任务流程</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="sec-title"><span class="t">本保单保全任务</span></div>
+      <div class="tasklist" id="taskList"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S3 任务详情 ============ -->
+<section class="screen" id="s3">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s2"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">任务详情</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <!-- 保全任务节点（置顶展示） -->
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="sec-title"><span class="t">保全任务节点</span></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- 保全信息 -->
+    <div class="card info-card">
+      <div class="sec-title"><span class="t">保单信息</span></div>
+      <div class="ov-head"><span class="k" style="font-size:13px;color:var(--t3);flex:0 0 auto;">子任务号</span><span class="ov-no" id="dtNo">—</span></div>
+      <div class="kv"><span class="k">受理单号</span><span class="v" id="dtAccept">—</span></div>
+      <div class="kv"><span class="k">任务类型</span><span class="v" id="dtName">—</span></div>
+      <div class="kv"><span class="k">保单号</span><span class="v" id="dtPolicy">—</span></div>
+      <div class="kv"><span class="k">险种名称</span><span class="v" id="dtProduct">—</span></div>
+      <div class="kv"><span class="k">客户姓名</span><span class="v" id="dtHolder">—</span></div>
+      <div class="kv"><span class="k">客户证件号</span><span class="v" id="dtIdNo">—</span></div>
+      <div class="kv" id="dtExtraRow" style="display:none;"><span class="k" id="dtExtraK">—</span><span class="v" id="dtExtraV">—</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S4========= S4 处理指引 / 卡点诊断 ============ -->
+<section class="screen" id="s4">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s3"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">处理指引</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <div class="block-card" id="bkCard">
+      <div class="block-head">
+        <span class="tag danger" id="bkTag">—</span>
+        <span class="hint" id="bkNode" style="color:var(--danger);">—</span>
+      </div>
+      <span class="block-title" id="bkTitle">—</span>
+      <span class="g-text" id="bkDesc">—</span>
+      <div id="bkBarWrap" style="display:none;flex-direction:column;gap:6px;">
+        <span class="hint" id="bkDaysText" style="color:var(--danger);">—</span>
+        <div class="pbar"><i id="bkBar" style="width:0%"></i></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px;"><span class="t">待办清单</span><span class="c" id="mtCount" style="color:var(--warn);">—</span></div>
+      <div class="mt-list" id="mtList"></div>
+    </div>
+
+    <div class="card guide">
+      <span class="form-title">业务员处理指引</span>
+      <div id="guideList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <div class="card rec">
+      <span class="form-title" style="margin-bottom:2px;">流转记录</span>
+      <div id="recList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <div class="card contact">
+      <div class="sec-title"><span class="t">处理人与联系方式</span><span class="c">按保单归属地分配</span></div>
+      <div class="ct-row">
+        <div class="avatar a1">张</div>
+        <div class="l"><span class="n">张敏 · 受理（个保全）</span><span class="o">工号 A10293 · 上海分公司营运中心</span></div>
+        <a class="tel t1" href="tel:02158768890">021-5876 8890</a>
+      </div>
+      <div class="divider"></div>
+      <div class="ct-row">
+        <div class="avatar a2">李</div>
+        <div class="l"><span class="n">李伟 · 复核（高级保全）</span><span class="o">工号 B20518 · 营运中心高级保全</span></div>
+        <a class="tel t2" href="tel:02158776621">021-5877 6621</a>
+      </div>
+      <div class="divider"></div>
+      <div class="ct-row">
+        <div class="avatar a3">王</div>
+        <div class="l"><span class="n">王芳 · 银保对接人</span><span class="o">芯银保保全 · 负责确认书与批单回传</span></div>
+        <a class="tel t3" href="tel:13800004021">138 **** 4021</a>
+      </div>
+    </div>
+
+    <div class="entry" data-goto="s5">
+      <div class="l"><span class="t">查看节点状态字典</span><span class="s">10 种状态的完整定义与责任方</span></div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn" id="btnCopy" style="flex:1;background:#fff;border:1px solid var(--border);color:var(--t2);font-weight:500;">复制处理说明</button>
+    <a class="btn btn-fixed" href="tel:02158768890" style="width:140px;flex:0 0 140px;text-decoration:none;">联系处理人</a>
+  </div>
+</section>
+
+<!-- ============ S5 节点状态字典 ============ -->
+<section class="screen" id="s5">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" id="s5Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">节点状态字典</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="searchbar"><div class="searchbox"><input id="kbSearch" type="search" placeholder="搜索状态或原因，如「审核失败」"></div></div>
+  <div class="chipbar" id="kbChips">
+    <button class="chip on" data-cat="all">全部 10</button>
+    <button class="chip" data-cat="fail">失败·终止类 2</button>
+    <button class="chip" data-cat="wait">待处理类 2</button>
+    <button class="chip" data-cat="run">进行中类 4</button>
+    <button class="chip" data-cat="done">成功类 2</button>
+  </div>
+
+  <div class="scroll"><div class="kb-list" id="kbList"></div>
+    <div class="kb-foot">
+      <span class="t">没找到对应状态？</span>
+      <span class="b">复制保单号 + 受理单号 + 状态截图，联系保单归属地营运中心；客服热线 95500</span>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<!-- 审核详情弹层 -->
+<div class="rvmodal" id="rvMask">
+  <div class="rvcard">
+    <div class="rvhead"><span>审核详情</span><button class="rvclose" id="rvClose">✕</button></div>
+    <div class="kv"><span class="k">审核人</span><span class="v" id="rvName">—</span></div>
+    <div class="kv"><span class="k">审核人工号</span><span class="v" id="rvNo">—</span></div>
+    <div class="kv"><span class="k">审核人联系方式</span><span class="v" id="rvTel">—</span></div>
+    <div class="kv" id="rvResultRow" style="display:none;"><span class="k">审核结论</span><span class="v" id="rvResult">—</span></div>
+    <div class="rv-reason" id="rvReasonRow"><span class="k">审核不通过原因</span><span class="v" id="rvReason">—</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+  var DESIGN_W = 375, DESIGN_H = 812;
+  function fit(){
+    var s = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H, 1.2);
+    document.getElementById('viewport').style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  var toast = document.getElementById('toast'), tTimer;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  }
+  /* 审核详情弹层关闭 */
+  var rvMask = document.getElementById('rvMask');
+  document.getElementById('rvClose').addEventListener('click', function(){ rvMask.classList.remove('show'); });
+  rvMask.addEventListener('click', function(e){ if (e.target === rvMask) rvMask.classList.remove('show'); });
+
+  /* ==========================================================
+     一、8 种节点状态定义
+     mode: run 进行中 / fail 失败阻断 / done 完成 / cancel 撤销
+     node: 状态在主链路 / 分支中的位置（由 PATHS 推导时间轴）
+     ========================================================== */
+  var STATUS = {
+    init: {
+      n:'行方发起申请', tc:'brand', mode:'run', cat:'run', type:'进行中 · 刚发起',
+      mean:'行方已上送保全变更申请，系统正在生成受理单（21 开头）与批单任务（83 开头）。',
+      owner:'行方 · 芯银保保全',
+      next:'等待系统校验；校验通过下发行方确认单，校验不通过则流转「申请失败」。',
+      why:'—（正常流转，一般几分钟内完成）',
+      api:'apply / image',
+      todo:[['1','行方已发起申请，等待系统生成受理单'],['0','生成后自动下发行方确认单，无需额外操作']],
+      guide:[['1','此节点为流程起点，行方发起后系统自动处理'],['2','若长时间停留在该节点，确认行方是否上送成功、接口是否返回受理成功'],['!','校验不通过时任务流转「申请失败」，需整改后重新发起']]
+    },
+    applyFail: {
+      n:'申请失败', tc:'danger', mode:'fail', cat:'fail', type:'失败 · 已终止',
+      mean:'行方发起的保全变更申请校验未通过，任务终止，需整改后由行方重新发起申请。',
+      owner:'行方 · 芯银保保全',
+      next:'按失败原因整改后，由行方重新发起保全变更申请。',
+      why:'非招行渠道保单 · 客户信息校验不通过 · 反洗钱名单命中 · 影像缺失或信息不一致 · 保单信息校验不通过 · 被保人未满 8 周岁',
+      api:'apply',
+      todo:[['0','查看申请失败原因（接口返回 resultMsg）'],['0','按原因整改影像或客户信息'],['0','整改后由行方重新发起保全变更申请'],['1','申请失败为终态，原任务不可恢复']],
+      guide:[['1','在流程详情中查看申请失败的具体原因'],['2','渠道类问题：联系行方核对渠道与信托公司维护信息'],['3','客户信息类问题：引导客户在【太平洋寿险】官微维护五字段信息'],['!','申请失败不可补件续办，必须重新发起申请']]
+    },
+    signWait: {
+      n:'行方确认单待客户签字', tc:'warn', mode:'run', cat:'wait', type:'待客户 · 180 天',
+      mean:'行方确认单已推送，等待客户完成电子签署并回传；超 180 天未签署任务自动撤销。',
+      owner:'客户 · 行方客户经理',
+      next:'引导客户完成签署；超 180 天未回传，受理单下全部任务自动撤销并通知银保、行方。',
+      why:'客户未收到或未查看确认单 · 未成年人需监护人代签 · 1.5 需第二投保人签字 · 2.0 需新投保人信托公司签章',
+      api:'sign / cancel',
+      todo:[['0','客户完成行方确认单电子签署'],['0','未成年人由监护人代签'],['0','1.5 模式另需第二投保人签字'],['0','2.0 模式另需新投保人信托公司签章']],
+      guide:[['1','联系行方客户经理，确认客户是否已收到确认单'],['2','引导客户完成电子签署，未成年被保人需监护人签名'],['3','签署后自动流转「客户已签字待复核」，无需运维介入'],['!','超 180 天未回传，本受理单下任务自动撤销']]
+    },
+    canceled: {
+      n:'已撤销', tc:'gray', mode:'cancel', cat:'fail', type:'终止 · 已撤销',
+      mean:'客户签署回传前行方回退，或超 180 天未签署，任务自动撤销 / 取消。',
+      owner:'行方 / 系统自动',
+      next:'如需继续办理，由行方重新发起保全变更申请。',
+      why:'客户签字超 180 天未回传 · 行方回退保全申请 · 重复申请触发整单取消',
+      api:'cancel',
+      todo:[['0','确认撤销原因（超期 / 行方回退 / 重复申请）'],['0','如需继续办理，由行方重新发起申请'],['1','已通知银保，由银保通知行方']],
+      guide:[['1','在流转记录中确认撤销时间与触发方'],['2','超期撤销：重新申请后需重新走客户签署流程'],['3','行方回退：确认行方业务诉求后再决定是否重新发起'],['!','撤销为终态，原受理单不可恢复']]
+    },
+    signedWait: {
+      n:'客户已签字待复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 待复核',
+      mean:'客户签字单证与人脸识别影像已回传，任务已上送营运中心高级保全（按保单归属地）复核。',
+      owner:'营运中心高级保全',
+      next:'等待复核结论；复核通过生成电子批单，审核不通过则流转「审核不通过待行方回传资料」。',
+      why:'—（正常等待，可联系营运中心高级保全确认进度）',
+      api:'second',
+      todo:[['1','等待营运中心高级保全完成复核'],['1','复核资料：审核影像 + 已签署确认单 + 人脸识别影像'],['0','正常等待，无需额外操作']],
+      guide:[['1','复核重点核对服务受理单 PDF 中所有保全项的详细内容'],['2','2.0 投保人变更需核对确认单上是否有新投保人信托公司签章'],['3','审核不通过时任务流转「审核不通过待行方回传资料」'],['!','复核通过后系统自动生成电子批单（含信托委托人、信托受益人）']]
+    },
+    fileWait: {
+      n:'审核不通过待行方回传资料', tc:'warn', mode:'run', cat:'wait', type:'待补充 · 行方补件',
+      mean:'复核结论为审核不通过，需行方按不通过原因补传资料，补全后任务继续复核。',
+      owner:'行方 · 芯银保保全',
+      next:'行方补齐资料后任务流转「行方资料补全后复核」，继续复核流程。',
+      why:'监护关系证明缺失 · 第二投保人与被保险人关系证明缺失 · 签字影像不清晰需重传',
+      api:'image / second',
+      todo:[['0','按审核不通过原因补齐行方资料'],['0','补传资料上传影像系统受理单下'],['1','补全后任务自动回到复核']],
+      guide:[['1','联系行方客户经理，按审核不通过原因补传资料'],['2','补传后由芯银保上传影像系统，复制到子任务号下'],['3','补全后任务流转「行方资料补全后复核」，继续复核'],['!','补传资料仍不符合要求的，可能再次退回本节点']]
+    },
+    recheck: {
+      n:'行方资料补全后复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 补件后复核',
+      mean:'行方资料已补全，任务重新进入营运中心复核。',
+      owner:'营运中心高级保全',
+      next:'等待复核结论；复核通过生成电子批单并回传行方。',
+      why:'—（正常等待，可联系营运中心高级保全确认进度）',
+      api:'second',
+      todo:[['1','等待复核完成'],['1','复核资料含补传的行方资料'],['0','正常等待，无需额外操作']],
+      guide:[['1','复核重点：补传资料与原影像、确认单信息一致性'],['2','复核通过后生成电子批单并回传行方'],['!','若补传资料仍不符合要求，可能再次退回「审核不通过待行方回传资料」']]
+    },
+    done: {
+      n:'完成', tc:'ok', mode:'done', cat:'done', type:'成功 · 终态',
+      mean:'复核通过，保全变更成功，电子批单已生成并回传行方，任务全生命周期结束。',
+      owner:'—（终态）',
+      next:'无需处理；如需凭证可在接口详情导出接口流水留档。',
+      why:'—',
+      api:'second / file',
+      todo:[['1','保全变更已生效'],['1','电子批单已回传行方'],['1','可在接口详情导出流水留档']],
+      guide:[['1','任务已完成，无需后续操作'],['2','如需凭证，在接口详情复制接口流水'],['3','客户可在行方查看变更后的信托委托人 / 受益人信息']]
+    }
+  };
+  var ST_KEYS = ['init','applyFail','signWait','canceled','signedWait','fileWait','recheck','done'];
+
+  /* ==========================================================
+     二、生命周期主链路 + 分支节点
+     四条流转路径：
+     ① 发起 → 申请失败（终态）
+     ② 发起 → 待客户签字 → 已撤销（终态）
+     ③ 发起 → 待客户签字 → 已签字待复核 → 审核不通过待行方回传资料（若有）→ 资料补全后复核 → 完成
+     ④ 发起 → 待客户签字 → 已签字待复核 → 完成
+     ========================================================== */
+  var MAIN = [
+    {t:'行方发起申请'},
+    {t:'行方确认单待客户签字'},
+    {t:'客户已签字待复核'},
+    {t:'完成'}
+  ];
+  var BRANCH = {
+    supp: {t:'审核不通过待行方回传资料'},
+    re:   {t:'行方资料补全后复核'}
+  };
+  /* 复核审核人信息（「审核不通过待行方回传资料」节点可查看详情） */
+  var AUDITOR = {name:'李伟', no:'B20518', tel:'021-5877 6621'};
+
+  /* ==========================================================
+     三、接口元数据
+     ========================================================== */
+  var API_ORDER = ['apply','image','first','sign','second','file','cancel'];
+  var API_META = {
+    apply:  {name:'保全变更申请',        code:'CMB-TRS-apply',      dir:'招行 → 芯银保 → 个保全', node:'行方发起申请',
+             desc:'校验第二投保人、代办人、信托公司后生成受理单与批单任务'},
+    image:  {name:'影像上传通知（485）', code:'CMB-IMG-upload',     dir:'芯银保 → 影像系统 → 个保全', node:'行方发起申请',
+             desc:'行方资料影像上传受理单下，成功后复制到各子任务号下'},
+    first:  {name:'确认单下发（486）',   code:'CMB-TRS-confirm',    dir:'个保全 → 芯银保 → 开放平台', node:'行方确认单待客户签字',
+             desc:'校验通过后生成行方确认单并推送客户，不通过则申请失败'},
+    sign:   {name:'客户签字单证回传',    code:'CMB-TRS-signBack',   dir:'招行 → 芯银保 → 个保全', node:'客户已签字待复核',
+             desc:'签字确认单 + 人脸识别影像回传，任务流转复核'},
+    second: {name:'复核结果通知',        code:'CMB-TRS-recheck',    dir:'个保全 → 芯银保 → 招行', node:'客户已签字待复核',
+             desc:'复核结论通知行方；审核不通过时流转审核不通过待行方回传资料'},
+    file:   {name:'保全批单文件通知',    code:'CMB-TRS-fileNotify', dir:'个保全 → 芯银保 OSS → 招行', node:'完成',
+             desc:'电子批单传芯银保 OSS 后调用文件通知接口回传行方，失败 3 分钟重试一次直至成功'},
+    cancel: {name:'任务取消 / 回退通知', code:'CMB-TRS-cancel',     dir:'个保全 → 芯银保 → 招行', node:'已撤销',
+             desc:'超 180 天未签署或行方回退时，取消本受理单下的任务'}
+  };
+  var NODE_LABEL = {apply:'保全申请', image:'影像上传', first:'确认单下发', sign:'签字回传', second:'复核结果', file:'批单回传', cancel:'任务撤销'};
+
+  function apiStateOf(k, task){
+    var s = task.status;
+    if (k === 'apply')  return 'ok';
+    if (k === 'image')  return (s === 'init') ? 'running' : 'ok';
+    if (k === 'first')  return (s === 'init') ? 'pending' : ((s === 'applyFail') ? 'fail' : 'ok');
+    if (k === 'sign')   return (s === 'signWait') ? 'wait' : ((s === 'canceled') ? 'fail'
+                          : ((['signedWait','fileWait','recheck','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
+    if (k === 'second') return (s === 'signedWait') ? 'running' : ((s === 'fileWait') ? 'wait'
+                          : ((s === 'recheck') ? 'running' : ((s === 'done') ? 'ok' : 'pending')));
+    if (k === 'file')   return (s === 'done') ? 'ok' : 'pending';
+    if (k === 'cancel') return (s === 'canceled') ? 'ok' : 'pending';
+    return 'pending';
+  }
+  /* ==========================================================
+     四、数据
+     ========================================================== */
+  function T(id, name, status, opt){
+    var t = {id:id, name:name, status:status, dates:[], times:{}, images:null, reason:'', audit:['—','—'], waitDays:0};
+    if (opt) for (var k in opt) t[k] = opt[k];
+    return t;
+  }
+
+  var POLICIES = {
+    'SH20250920001866': {
+      no:'SH20250920001866', mode:'2.0 投保人变更', product:'太保鑫福利（A款）两全保险（分红型）', holder:'张**', insured:'李**（未成年）',
+      acceptNo:'2120250920001', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[
+        T('8320250920001','身故受益人变更','signWait',{waitDays:18,
+          reason:'客户尚未完成行方确认单签署',
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'},
+          dates:['2025-09-18 09:40','2025-09-20 14:30','','']}),
+        T('8320250920002','生存金受益人变更','init',{
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33'},
+          dates:['2025-09-18 09:40','','','']}),
+        T('8320250920003','投保人变更','signedWait',{
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18', sign:'2025-09-22 10:12:44'},
+          dates:['2025-09-18 09:40','2025-09-20 14:30','2025-09-22 10:12','']}),
+        T('8320250922001','身故受益人变更','done',{accept:'2120250922005',
+          times:{apply:'2025-09-22 14:03:48', image:'2025-09-22 14:05:02',
+                 first:'2025-09-22 17:22:30', sign:'2025-09-23 10:16:44', second:'2025-09-24 15:20:44', file:'2025-09-24 15:26:09'},
+          dates:['2025-09-22 14:03','2025-09-23 10:16','2025-09-24 15:20','2025-09-24 15:26']})
+      ]
+    },
+    'SH20250916000442': {
+      no:'SH20250916000442', mode:'1.5 指定第二投保人', product:'太保鑫从容（B款）两全保险（分红型）', holder:'王**', insured:'王**（成年）',
+      afters:{'指定第二投保人变更':'周**'},
+      acceptNo:'2120250916007', way:'亲办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250916001','指定第二投保人变更','fileWait',{
+          reason:'第二投保人与被保险人关系证明不清晰，需行方补传',
+          times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25',''],
+          suppDate:'2025-09-19 15:05'}),
+        T('8320250916002','身故受益人变更','fileWait',{
+          reason:'身故受益人身份证明不清晰，需行方补传',
+          times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25',''],
+          suppDate:'2025-09-19 15:05'}) ]
+    },
+    'SH20250912000918': {
+      no:'SH20250912000918', mode:'1.0 身故受益人变更', product:'太保相伴一生年金保险（分红型）', holder:'赵**', insured:'赵**（成年）',
+      acceptNo:'2120250912003', way:'亲办', trustName:'平安信托有限责任公司',
+      tasks:[ T('8320250912001','身故受益人变更','done',{
+        times:{apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02',
+               first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-15 15:20:44', file:'2025-09-15 15:26:09'},
+        dates:['2025-09-12 14:03','2025-09-13 10:16','2025-09-15 15:20','2025-09-15 15:26']}) ]
+    },
+    'SH20250908000731': {
+      no:'SH20250908000731', mode:'2.0 投保人变更', product:'太保鑫福临门（C款）两全保险（分红型）', holder:'孙**', insured:'孙**（未成年）',
+      acceptNo:'2120250908002', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[
+        T('8320250908001','投保人变更','applyFail',{
+          reason:'客户信息属于反洗钱监控名单（以实际接口返回内容为准）',
+          times:{apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'},
+          dates:['2025-09-08 11:04','','',''],
+          failDate:'2025-09-09 10:18'}),
+        T('8320250908002','身故受益人变更','applyFail',{
+          reason:'客户信息属于反洗钱监控名单（以实际接口返回内容为准）',
+          times:{apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'},
+          dates:['2025-09-08 11:04','','',''],
+          failDate:'2025-09-09 10:18'}) ]
+    },
+    'SH20250905000319': {
+      no:'SH20250905000319', mode:'1.5 指定第二投保人', product:'太保金诺优享终身寿险（分红型）', holder:'周**', insured:'周**（未成年）',
+      afters:{'指定第二投保人变更':'褚**'},
+      acceptNo:'2120250905006', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250905001','指定第二投保人变更','signWait',{waitDays:9,
+          reason:'客户尚未完成行方确认单签署',
+          times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
+          dates:['2025-09-05 09:22','2025-09-05 16:40','','']}),
+        T('8320250905002','身故受益人变更','signWait',{waitDays:9,
+          reason:'客户尚未完成行方确认单签署',
+          times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
+          dates:['2025-09-05 09:22','2025-09-05 16:40','','']}) ]
+    },
+    'SH20250901000256': {
+      no:'SH20250901000256', mode:'2.0 投保人变更', product:'太保长相伴（庆典版）终身寿险（分红型）', holder:'郑**', insured:'郑**（未成年）',
+      acceptNo:'2120250901005', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[
+        T('8320250901001','投保人变更','recheck',{
+          reason:'签字影像不清晰，行方已补传',
+          times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
+                 first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18',''],
+          suppDate:'2025-09-04 17:05', reDate:'2025-09-05 09:30'}),
+        T('8320250901002','身故受益人变更','recheck',{
+          reason:'签字影像不清晰，行方已补传',
+          times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
+                 first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18',''],
+          suppDate:'2025-09-04 17:05', reDate:'2025-09-05 09:30'}) ]
+    },
+    'SH20250928000104': {
+      no:'SH20250928000104', mode:'1.0 身故受益人变更', product:'太保鑫福利（B款）两全保险（分红型）', holder:'吴**', insured:'吴**（成年）',
+      acceptNo:'2120250928009', way:'亲办', trustName:'平安信托有限责任公司',
+      tasks:[ T('8320250928001','身故受益人变更','done',{
+        times:{apply:'2025-09-26 13:42:18', image:'2025-09-26 13:44:05',
+               first:'2025-09-26 17:10:33', sign:'2025-09-27 10:02:19', second:'2025-09-28 16:22:47', file:'2025-09-28 16:28:12'},
+        dates:['2025-09-26 13:42','2025-09-27 10:02','2025-09-28 16:22','2025-09-28 16:28']}) ]
+    },
+    'SH20250815000220': {
+      no:'SH20250815000220', mode:'1.5 指定第二投保人', product:'太保鑫从容（C款）两全保险（分红型）', holder:'陈**', insured:'陈**（未成年）',
+      afters:{'指定第二投保人变更':'杨**'},
+      acceptNo:'2120250815004', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250815001','指定第二投保人变更','canceled',{
+          reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
+          waitDays:30, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51',
+                 first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-08-15 10:12','2025-08-15 16:42','','']}),
+        T('8320250815002','身故受益人变更','canceled',{
+          reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
+          waitDays:30, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51',
+                 first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-08-15 10:12','2025-08-15 16:42','','']}) ]
+    }
+  };
+
+  /* 状态演示保单：8 种状态各一笔 */
+  (function(){
+    var demo = { no:'DEMO-STATUS-0001', mode:'2.0 投保人变更', holder:'演示**', insured:'演示**（未成年）',
+      acceptNo:'21202509000001', way:'代办', trustName:'招银国际信托有限公司', tasks:[],
+      afters:{'指定第二投保人变更':'何**'} };
+    var names = ['身故受益人变更','生存金受益人变更','投保人变更','指定第二投保人变更'];
+    ST_KEYS.forEach(function(k, i){
+      var id = '83202509000' + (i + 1);
+      var acc = '2120250900000' + (i < 4 ? 1 : (i < 7 ? 2 : 3));
+      var t = T(id, names[i % 4], k, {
+        accept:acc,
+        waitDays:(k === 'signWait' ? 18 : (k === 'canceled' ? 30 : 0)),
+        cancelTime:'2025-09-15 00:05'
+      });
+      if (k === 'init'){ t.times = {apply:'2025-09-28 16:40:02', image:'2025-09-28 16:41:20'}; t.dates = ['2025-09-28 16:40','','','']; }
+      if (k === 'applyFail'){ t.reason = '客户信息属于反洗钱监控名单（以实际接口返回内容为准）'; t.times = {apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'}; t.dates = ['2025-09-08 11:04','','','']; t.failDate = '2025-09-09 10:18'; }
+      if (k === 'signWait'){ t.times = {apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'}; t.dates = ['2025-09-18 09:40','2025-09-20 14:30','','']; }
+      if (k === 'canceled'){ t.reason = '超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）'; t.times = {apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51', first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'}; t.dates = ['2025-08-15 10:12','2025-08-15 16:42','','']; }
+      if (k === 'signedWait'){ t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
+      if (k === 'fileWait'){ t.reason = '监护关系证明不清晰，需行方补传'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; t.suppDate = '2025-09-19 15:05'; }
+      if (k === 'recheck'){ t.reason = '签字影像不清晰，行方已补传'; t.times = {apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02', first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'}; t.dates = ['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']; t.suppDate = '2025-09-04 17:05'; t.reDate = '2025-09-05 09:30'; }
+      if (k === 'done'){ t.times = {apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02', first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-15 15:20:44', file:'2025-09-15 15:26:09'}; t.dates = ['2025-09-12 14:03','2025-09-13 10:16','2025-09-15 15:20','2025-09-15 15:26']; }
+      demo.tasks.push(t);
+    });
+    POLICIES['DEMO-STATUS-0001'] = demo;
+  })();
+
+  var curPolicy = POLICIES['SH20250920001866'], curTask = 0;
+
+  /* ==========================================================
+     五、通用渲染工具
+     ========================================================== */
+  function statusTag(k){ var s = STATUS[k]; return '<span class="tag ' + s.tc + '">' + s.n + '</span>'; }
+  function lastTimeOf(task){
+    var v = [];
+    if (task.times) for (var k in task.times){ if (task.times[k]) v.push(task.times[k]); }
+    v.sort(); return v.length ? v[v.length - 1] : '';
+  }
+  function gTimeOf(task){
+    if (task.times && task.times.apply) return task.times.apply.slice(0, 16);
+    if (task.dates && task.dates[0]) return task.dates[0];
+    return '—';
+  }
+  function imagesOf(task){
+    if (task.images) return task.images;
+    var s = task.status;
+    var base = [[1,'保全服务受理单（485）'],[1,'投保人证件影像'],[1,'被保险人证件影像']];
+    if (s === 'init') return [[0,'保全服务受理单（485）· 生成中'],[0,'证件影像 · 待上传']];
+    if (s === 'applyFail') return base;
+    if (s === 'signWait') return base.concat([[1,'行方确认单（486）· 待客户签署']]);
+    if (s === 'canceled') return base.concat([[1,'行方确认单（486）· 未签署']]);
+    if (s === 'signedWait') return base.concat([[1,'行方确认单（486）· 已签署'],[1,'人脸识别影像']]);
+    if (s === 'fileWait') return base.concat([[1,'行方确认单（486）· 已签署'],[1,'人脸识别影像'],[0,'补充资料 · 待行方回传']]);
+    if (s === 'recheck') return base.concat([[1,'行方确认单（486）· 已签署'],[1,'人脸识别影像'],[1,'补充资料 · 已回传']]);
+    return base.concat([[1,'行方确认单（486）· 已签署'],[1,'人脸识别影像'],[1,'电子批单 · 已生成']]);
+  }
+
+  /* ==========================================================
+     七、S2 渲染
+     ========================================================== */
+  var taskList = document.getElementById('taskList');
+  function renderPolicy(){
+    var p = curPolicy;
+
+    /* 按受理单号分组（同一受理单下可有多笔子任务） */
+    var groups = [], gmap = {};
+    p.tasks.forEach(function(t, i){
+      var acc = t.accept || p.acceptNo;
+      if (!gmap[acc]){ gmap[acc] = {no:acc, items:[]}; groups.push(gmap[acc]); }
+      gmap[acc].items.push({t:t, i:i});
+    });
+    taskList.innerHTML = groups.map(function(g){
+      var head =
+        '<div class="agroup-head">' +
+          '<span class="l"><span class="no">受理单号 ' + g.no + '</span>' +
+          '<span class="tm">申请时间 ' + gTimeOf(g.items[0].t) + '</span></span>' +
+        '</div>';
+      var cards = g.items.map(function(it){
+        var t = it.t, i = it.i;
+        var s = STATUS[t.status];
+        var cls = (s.mode === 'fail' && s.mode !== 'cancel') ? 'hot' : ((s.mode === 'done') ? 'done' : ((s.cat === 'wait' && s.mode !== 'cancel') ? 'hot' : (s.mode === 'cancel' ? '' : 'run')));
+        var last = lastTimeOf(t);
+        return '<div class="tcard ' + cls + '" data-i="' + i + '">' +
+          '<span class="l"><span class="n">' + t.name + '</span>' +
+          '<span class="m">子任务号 ' + t.id + '</span>' +
+          (last ? '<span class="cur" style="color:var(--t3);">最近节点时间：' + last + '</span>' : '') + '</span>' +
+          '<span style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' + statusTag(t.status) +
+          '<span class="arw">›</span></span></div>';
+      }).join('');
+      return '<div class="agroup">' + head + cards + '</div>';
+    }).join('');
+  }
+  taskList.addEventListener('click', function(e){
+    var c = e.target.closest('.tcard'); if (!c) return;
+    selectTask(parseInt(c.getAttribute('data-i'), 10)); go('s3');
+  });
+
+  /* ==========================================================
+     八、S3 渲染
+     ========================================================== */
+  function mkNodes(task){
+    var s = STATUS[task.status];
+    function mainNode(idx, st){
+      var n = MAIN[idx];
+      return {s:st, t:n.t, d:(task.dates[idx] || ''), detail:(idx === 2 && st !== 'todo'), dkey:(idx === 2 ? 'sign' : '')};
+    }
+    function branchNode(key, st){
+      var n = BRANCH[key];
+      var dt = (key === 'supp') ? task.suppDate : task.reDate;
+      return {s:st, t:n.t, d:(dt || ''), detail:(key === 'supp'), dkey:key};
+    }
+    var spec = {
+      init:       [['current',0],['todo',1],['todo',2],['todo',3]],
+      applyFail:  [['done',0],['fail']],
+      signWait:   [['done',0],['current',1],['todo',2],['todo',3]],
+      canceled:   [['done',0],['done',1],['cancel']],
+      signedWait: [['done',0],['done',1],['current',2],['todo',3]],
+      fileWait:   [['done',0],['done',1],['done',2],['current','supp'],['todo','re'],['todo',3]],
+      recheck:    [['done',0],['done',1],['done',2],['done','supp'],['current','re'],['todo',3]],
+      done:       [['done',0],['done',1],['done',2],['done',3]]
+    }[task.status] || [];
+    return spec.map(function(step){
+      var kind = step[0], ref = step[1];
+      if (kind === 'done' || kind === 'current' || kind === 'todo'){
+        return (typeof ref === 'number') ? mainNode(ref, kind) : branchNode(ref, kind);
+      }
+      if (kind === 'fail'){
+        return {s:'fail', t:'申请失败', d:(task.failDate ? task.failDate + '　' : '') + (task.reason || '申请校验未通过，任务终止')};
+      }
+      return {s:'cancel', t:'已撤销', d:(task.cancelTime ? task.cancelTime + '　' : '') + (task.reason || '任务撤销')};
+    });
+  }
+  function renderTimeline(){
+    var task = curPolicy.tasks[curTask];
+    var nodes = mkNodes(task);
+    document.getElementById('timeline').innerHTML = nodes.map(function(n, i){
+      var last = i === nodes.length - 1;
+      var lineCls = (n.s === 'done') ? '' : ' off';
+      var tCls = (n.s === 'current') ? ' cur' : ((n.s === 'fail') ? ' fail' : ((n.s === 'cancel') ? ' cancel' : ((n.s === 'todo') ? ' todo' : '')));
+      var dCls = (n.s === 'current') ? ' cur' : '';
+      return '<div class="tl-node">' +
+        '<div class="tl-col"><div class="tl-dot ' + n.s + '"></div>' +
+        (last ? '' : '<div class="tl-line' + lineCls + '"></div>') + '</div>' +
+        '<div class="tl-right"><span class="t' + tCls + '">' + n.t + '</span>' +
+        (n.d ? '<span class="d' + dCls + '">' + n.d + '</span>' : '') +
+        (n.detail ? '<button class="tl-detail" data-detail="1" data-key="' + (n.dkey || '') + '">详情</button>' : '') +
+        '</div></div>';
+    }).join('');
+    bindTimelineDetail();
+  }
+  /* 时间轴详情弹层：「客户已签字待复核」展示审核结论，「审核不通过待行方回传资料」展示不通过原因 */
+  function bindTimelineDetail(){
+    var btns = document.querySelectorAll('#timeline .tl-detail');
+    Array.prototype.forEach.call(btns, function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        var t = curPolicy.tasks[curTask];
+        var s = t.status;
+        var key = btn.getAttribute('data-key');
+        var rRow = document.getElementById('rvResultRow');
+        var rTxt = document.getElementById('rvResult');
+        var whyRow = document.getElementById('rvReasonRow');
+        document.getElementById('rvName').textContent = AUDITOR.name;
+        document.getElementById('rvNo').textContent = AUDITOR.no;
+        document.getElementById('rvTel').textContent = AUDITOR.tel;
+        if (key === 'sign'){
+          /* 客户已签字待复核：流转到完成显示审核通过，流转到审核不通过显示审核不通过，未流转不显示结论 */
+          if (s === 'done'){
+            rRow.style.display = ''; rTxt.textContent = '审核通过'; rTxt.style.color = 'var(--success)';
+          } else if (s === 'fileWait' || s === 'recheck'){
+            rRow.style.display = ''; rTxt.textContent = '审核不通过'; rTxt.style.color = 'var(--danger)';
+          } else {
+            rRow.style.display = 'none';
+          }
+          whyRow.style.display = (t.reason && (s === 'fileWait' || s === 'recheck')) ? '' : 'none';
+          document.getElementById('rvReason').textContent = t.reason || '';
+        } else {
+          /* 审核不通过待行方回传资料：展示不通过原因 */
+          rRow.style.display = 'none';
+          whyRow.style.display = '';
+          document.getElementById('rvReason').textContent = t.reason || '影像资料与保单信息不一致，需行方核实后重新补传';
+        }
+        document.getElementById('rvMask').classList.add('show');
+      });
+    });
+  }
+
+  /* 变更后信息字段：按任务类型显示对应字段名 */
+  var AFTER_FIELD = {
+    '身故受益人变更':'变更后受益人', '生存金受益人变更':'变更后受益人',
+    '投保人变更':'变更后投保人', '指定第二投保人变更':'指定第二投保人姓名'
+  };
+  var AFTER_DEMO = {'变更后受益人':'XX信托公司', '变更后投保人':'XX信托公司', '指定第二投保人姓名':'陈**'};
+
+  /* 证件号脱敏：前 3 后 4，中间以 * 代替 */
+  function maskIdNo(id){
+    id = String(id || '');
+    if (!id) return '—';
+    if (id.length <= 7) return id;
+    return id.slice(0, 3) + '*'.repeat(id.length - 7) + id.slice(-4);
+  }
+
+  function selectTask(i){
+    curTask = i;
+    var t = curPolicy.tasks[i], s = STATUS[t.status];
+    document.getElementById('dtNo').textContent = t.id;
+    document.getElementById('dtAccept').textContent = t.accept || curPolicy.acceptNo;
+    document.getElementById('dtName').textContent = t.name;
+    document.getElementById('dtPolicy').textContent = curPolicy.no;
+    document.getElementById('dtProduct').textContent = curPolicy.product || '—';
+    document.getElementById('dtHolder').textContent = curPolicy.holder;
+    document.getElementById('dtIdNo').textContent = maskIdNo(HOLDER_IDS[curPolicy.no] || '');
+
+    /* 按任务类型追加变更后信息字段 */
+    var bt = normBizType(t.name);
+    var xrow = document.getElementById('dtExtraRow');
+    if (AFTER_FIELD[bt]){
+      document.getElementById('dtExtraK').textContent = AFTER_FIELD[bt];
+      document.getElementById('dtExtraV').textContent = (curPolicy.afters && curPolicy.afters[bt]) || AFTER_DEMO[AFTER_FIELD[bt]] || '—';
+      xrow.style.display = '';
+    } else {
+      xrow.style.display = 'none';
+    }
+
+    renderS4(t, s);
+    renderTimeline();
+  }
+
+  /* ==========================================================
+     九、S4 处理指引
+     ========================================================== */
+  function renderS4(t, s){
+    var card = document.getElementById('bkCard');
+    var tone = (s.mode === 'fail') ? '' : (s.mode === 'cancel') ? 'n' : (s.cat === 'wait') ? 'w' : (s.mode === 'done') ? 'g' : 'b';
+    var color = (s.mode === 'fail') ? 'var(--danger)' : (s.mode === 'cancel') ? 'var(--t2)' : (s.cat === 'wait') ? 'var(--warn)' : (s.mode === 'done') ? 'var(--success)' : 'var(--brand)';
+    card.className = 'block-card' + (tone ? ' ' + tone : '');
+
+    document.getElementById('bkTag').textContent = s.type;
+    document.getElementById('bkTag').className = 'tag ' + s.tc;
+    document.getElementById('bkNode').textContent = s.n;
+    document.getElementById('bkNode').style.color = color;
+    document.getElementById('bkTitle').textContent = s.n;
+    document.getElementById('bkTitle').style.color = color;
+    document.getElementById('bkDesc').textContent = s.mean + (t.reason ? '本任务原因：' + t.reason + '。' : '') + '下一步：' + s.next;
+
+    var barWrap = document.getElementById('bkBarWrap');
+    if (t.status === 'signWait'){
+      barWrap.style.display = 'flex';
+      document.getElementById('bkDaysText').textContent = '超期倒计时 ' + (t.waitDays || 0) + ' / 180 天';
+      document.getElementById('bkDaysText').style.color = color;
+      document.getElementById('bkBar').style.width = Math.round((t.waitDays || 0) / 30 * 100) + '%';
+    } else { barWrap.style.display = 'none'; }
+
+    var todo = s.todo || [];
+    var undone = todo.filter(function(x){ return x[0] === '0'; }).length;
+    document.getElementById('mtCount').textContent = undone + ' 项待处理';
+    document.getElementById('mtCount').style.color = color;
+    document.getElementById('mtList').innerHTML = todo.map(function(x){
+      var d = x[0] === '1';
+      return '<div class="mt-item"><span class="mt-box' + (d ? ' done' : '') + '"' + (d ? ' style="border-color:var(--success)"' : '') + '></span>' +
+        '<span class="mt-text' + (d ? ' done' : '') + '">' + x[1] + '</span></div>';
+    }).join('');
+
+    document.getElementById('guideList').innerHTML = (s.guide || []).map(function(g){
+      var w = g[0] === '!';
+      return '<div class="g-step"><span class="g-num' + (w ? ' warn' : '') + '">' + g[0] + '</span>' +
+        '<span class="g-text' + (w ? ' warn' : '') + '">' + g[1] + '</span></div>';
+    }).join('');
+
+    var recs = [];
+    API_ORDER.forEach(function(k){
+      if (t.times && t.times[k]) recs.push({k:k, time:t.times[k], st:apiStateOf(k, t)});
+    });
+    recs.sort(function(a, b){ return a.time < b.time ? 1 : -1; });
+    document.getElementById('recList').innerHTML = recs.length ? recs.map(function(r, i){
+      var c = (r.st === 'fail') ? 'var(--danger)' : ((r.st === 'wait' || r.st === 'running') ? 'var(--warn)' : 'var(--success)');
+      return '<div class="rec-item"><div class="rec-col"><span class="rec-dot" style="background:' + c + '"></span>' +
+        (i === recs.length - 1 ? '' : '<span class="rec-line"></span>') + '</div>' +
+        '<div class="rec-right"><span class="t">' + NODE_LABEL[r.k] + '</span>' +
+        '<span class="m">' + r.time + ' · ' + API_META[r.k].name + '</span></div></div>';
+    }).join('') : '<span class="hint">暂无流转记录</span>';
+  }
+
+  /* ==========================================================
+     十、屏幕切换
+     ========================================================== */
+  var order = { s1:0, s2:1, s3:2, s4:3, s5:4 }, current = 's1', last = 's1';
+  function go(id){
+    if (id === current) return;
+    var from = document.getElementById(current), to = document.getElementById(id);
+    var back = order[id] < order[current];
+    last = current;
+    from.classList.remove('active');
+    from.classList.toggle('leaving', back);
+    to.style.transform = back ? 'translateX(-24px)' : 'translateX(24px)';
+    void to.offsetWidth;
+    to.style.transform = '';
+    to.classList.remove('leaving');
+    to.classList.add('active');
+    var sc = to.querySelector('.scroll'); if (sc) sc.scrollTop = 0;
+    current = id;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-goto]'), function(el){
+    el.addEventListener('click', function(){ go(el.getAttribute('data-goto')); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-back]'), function(el){
+    el.addEventListener('click', function(){ go(el.getAttribute('data-back')); });
+  });
+  document.getElementById('s5Back').addEventListener('click', function(){ go(last === 's5' ? 's1' : last); });
+
+  /* ==========================================================
+     十一、S1 查询：投保人证件号 + 保单号
+     ========================================================== */
+  var HOLDER_IDS = {
+    'SH20250920001866':'310101198503124052',
+    'SH20250916000442':'310101199207284613',
+    'SH20250912000918':'310101198811094037',
+    'SH20250908000731':'310101199504154082',
+    'SH20250905000319':'310101198302274059',
+    'SH20250901000256':'310101199312064074',
+    'SH20250928000104':'310101198708174041',
+    'SH20250815000220':'310101199109134086',
+    'DEMO-STATUS-0001':'310101199001011234'
+  };
+  function queryPolicy(no){
+    var key = (no || '').trim().toUpperCase();
+    var p = POLICIES[key];
+    if (!p){ showToast('未查到保单 ' + key + '，可试试 SH20250920001866'); return false; }
+    curPolicy = p; curTask = 0;
+    renderPolicy(); selectTask(0);
+    return true;
+  }
+  function openPolicy(no){ if (queryPolicy(no)) go('s2'); }
+
+  /* 最近查询卡片（对齐真实系统样式） */
+  function recentCard(k){
+    var p = POLICIES[k];
+    return '<div class="rcard" data-policy="' + k + '">' +
+      '<div class="top"><span class="no">' + k + '</span>' + statusTag(p.tasks[0].status) + '</div>' +
+      '<div class="mid"><span class="mode">' + (p.product || '—') + '</span></div>' +
+      '<div class="kv">' +
+        '<span class="cell full"><span class="k">业务类型：</span><span class="v">' + policyBizType(p) + '</span></span>' +
+        '<span class="cell"><span class="k">申请日期：</span><span class="v">' + policyApplyDate(p) + '</span></span>' +
+      '</div>' +
+    '</div>';
+  }
+  function bindRecentCards(box){
+    Array.prototype.forEach.call(box.querySelectorAll('[data-policy]'), function(el){
+      el.addEventListener('click', function(){ openPolicy(el.getAttribute('data-policy')); });
+    });
+  }
+  var RECENT = ['SH20250920001866','SH20250916000442','SH20250912000918','SH20250908000731','SH20250905000319','SH20250928000104','SH20250815000220'];
+  function policyApplyDate(p){
+    var t = p.tasks[0];
+    var s = (t.times && t.times.apply) || (t.dates && t.dates[0]) || '';
+    return s.slice(0, 10);
+  }
+  /* 业务类型：标准顺序（投保人变更 / 指定第二投保人变更不可单独申请，须与身故受益人变更同单申请） */
+  var BIZ_BASE = ['身故受益人变更','生存金受益人变更','投保人变更','指定第二投保人变更'];
+  function normBizType(n){
+    n = (n || '').replace(/^[\d.]+\s*/, '');
+    if (n === '指定第二投保人') n = '指定第二投保人变更';
+    return n;
+  }
+  /* 一个受理任务可同时申请多个保全项，业务类型取该受理单下所有任务名称去重 */
+  function policyBizTypes(p){
+    var seen = {}, out = [];
+    (p.tasks || []).forEach(function(t){
+      var n = normBizType(t.name);
+      if (n && !seen[n]){ seen[n] = 1; out.push(n); }
+    });
+    if (!out.length) out = [normBizType(p.mode)];
+    out.sort(function(a, b){ return BIZ_BASE.indexOf(a) - BIZ_BASE.indexOf(b); });
+    return out;
+  }
+  function policyBizType(p){ return policyBizTypes(p).join('、'); }
+  /* 业务类型选项：标准类型固定列表 + 保单实际类型，合并去重 */
+  var BIZ_TYPES = BIZ_BASE.concat(Object.keys(POLICIES).reduce(function(a, k){ return a.concat(policyBizTypes(POLICIES[k])); }, []))
+    .filter(function(v, i, a){ return a.indexOf(v) === i; });
+  function renderRecent(){
+    var d1 = document.getElementById('fDateStart').value;
+    var d2 = document.getElementById('fDateEnd').value;
+    var fs = document.getElementById('fStatus').value;
+    var fb = document.getElementById('fBiz').value;
+    var ks = RECENT.filter(function(k){
+      var p = POLICIES[k], d = policyApplyDate(p);
+      if (d1 && d < d1) return false;
+      if (d2 && d > d2) return false;
+      if (fs && fs !== 'all' && p.tasks[0].status !== fs) return false;
+      if (fb && fb !== 'all' && policyBizTypes(p).indexOf(fb) === -1) return false;
+      return true;
+    });
+    var box = document.getElementById('recentList');
+    box.innerHTML = ks.length
+      ? ks.map(recentCard).join('')
+      : '<div class="fempty">无符合条件的查询记录，请调整筛选条件</div>';
+    bindRecentCards(box);
+  }
+  (function(){
+    var sel = document.getElementById('fStatus');
+    ST_KEYS.forEach(function(k){
+      var o = document.createElement('option');
+      o.value = k; o.textContent = STATUS[k].n;
+      sel.appendChild(o);
+    });
+    var bsel = document.getElementById('fBiz');
+    BIZ_TYPES.forEach(function(bt){
+      var o = document.createElement('option');
+      o.value = bt; o.textContent = bt;
+      bsel.appendChild(o);
+    });
+    var panel = document.getElementById('fPanel'), btn = document.getElementById('btnFilter');
+    btn.addEventListener('click', function(){
+      panel.classList.toggle('open');
+      btn.classList.toggle('on', panel.classList.contains('open'));
+    });
+    document.getElementById('btnFClear').addEventListener('click', function(){
+      document.getElementById('fDateStart').value = '';
+      document.getElementById('fDateEnd').value = '';
+      sel.value = 'all';
+      bsel.value = 'all';
+      renderRecent();
+      showToast('筛选条件已重置');
+    });
+    ['fDateStart','fDateEnd'].forEach(function(id){
+      document.getElementById(id).addEventListener('change', renderRecent);
+    });
+    sel.addEventListener('change', renderRecent);
+    bsel.addEventListener('change', renderRecent);
+  })();
+  renderRecent();
+
+  function doQuery(){
+    var v = document.getElementById('fKey').value.replace(/\s/g, '');
+    if (!v){ showToast('请输入保单号或投保人证件号'); return; }
+    var key = v.toUpperCase(), p = POLICIES[key];
+    if (p){ openPolicy(key); return; }
+    var hits = Object.keys(HOLDER_IDS).filter(function(k){ return HOLDER_IDS[k] === v && POLICIES[k]; });
+    if (!hits.length){ showToast('未查到匹配的保单或证件号，请核对'); return; }
+    if (hits.length === 1){ openPolicy(hits[0]); return; }
+    var box = document.getElementById('idResults');
+    box.style.display = 'flex';
+    box.innerHTML = '<div class="form-title">该证件号下的保单（' + hits.length + ' 张）</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;">' + hits.map(recentCard).join('') + '</div>';
+    bindRecentCards(box);
+    showToast('该证件号下有 ' + hits.length + ' 张保单，请选择');
+    box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  document.getElementById('fKey').addEventListener('keydown', function(e){ if (e.key === 'Enter') doQuery(); });
+
+  /* 复制 */
+  document.getElementById('btnCopy').addEventListener('click', function(){
+    var t = curPolicy.tasks[curTask], s = STATUS[t.status];
+    var txt = '【招行云信托保全 · 处理说明】\n保单号：' + curPolicy.no + '\n受理单号：' + curPolicy.acceptNo +
+      '\n任务：' + t.name + '（子任务号 ' + t.id + '）\n节点状态：' + s.n + '（' + s.type + '）' +
+      '\n状态含义：' + s.mean + '\n责任方：' + s.owner + '\n下一步：' + s.next +
+      (t.reason ? '\n本任务原因：' + t.reason : '') +
+      '\n跟进：王芳 021-5876 8890\n复核：李伟 021-5877 6621';
+    copy(txt, '处理说明已复制，可直接发给对接人');
+  });
+  function copy(txt, okMsg){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ showToast(okMsg); },
+        function(){ showToast('复制失败，请手动长按选择文本'); });
+    } else { showToast('当前环境不支持一键复制'); }
+  }
+
+  /* ==========================================================
+     十二、S5 节点状态字典
+     ========================================================== */
+  var list = document.getElementById('kbList'), activeCat = 'all', keyword = '';
+  function renderDict(){
+    var items = ST_KEYS.filter(function(k){
+      var s = STATUS[k];
+      var okCat = activeCat === 'all' || s.cat === activeCat;
+      var okKw = !keyword || (s.n + s.mean + s.owner + s.next + s.why + s.type).indexOf(keyword) > -1;
+      return okCat && okKw;
+    });
+    if (!items.length){ list.innerHTML = '<div class="kb-foot"><span class="t">没有匹配的状态</span><span class="b">试试更换关键词，或联系保单归属地营运中心</span></div>'; return; }
+    list.innerHTML = items.map(function(k, i){
+      var s = STATUS[k];
+      return '<div class="kb-item' + (i === 0 ? ' open' : '') + '">' +
+        '<div class="kb-head"><div class="l"><span class="t">' + s.n + '</span><span class="n">' + s.type + '</span></div>' +
+        '<span class="tag ' + s.tc + '">' + (s.mode === 'cancel' ? '终止' : (s.cat === 'fail' ? '失败' : (s.cat === 'wait' ? '待处理' : (s.cat === 'run' ? '进行中' : '成功')))) + '</span></div>' +
+        '<div class="kb-body">' +
+          '<div class="kb-quote">' + s.mean + '</div>' +
+          '<div class="kb-line"><span class="k">状态含义</span><span class="v">' + s.mean + '</span></div>' +
+          '<div class="kb-line"><span class="k">责任方</span><span class="v"><strong>' + s.owner + '</strong></span></div>' +
+          '<div class="kb-line"><span class="k">下一步</span><span class="v">' + s.next + '</span></div>' +
+          '<div class="kb-line"><span class="k">常见原因</span><span class="v">' + s.why + '</span></div>' +
+          '<div class="kb-line"><span class="k">关联接口</span><span class="v">' + s.api + '</span></div>' +
+        '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.kb-item'), function(el){
+      el.addEventListener('click', function(){ el.classList.toggle('open'); });
+    });
+  }
+  renderDict();
+  document.getElementById('kbChips').addEventListener('click', function(e){
+    var c = e.target.closest('.chip'); if (!c) return;
+    Array.prototype.forEach.call(document.getElementById('kbChips').querySelectorAll('.chip'), function(x){ x.classList.remove('on'); });
+    c.classList.add('on'); activeCat = c.getAttribute('data-cat'); renderDict();
+  });
+  document.getElementById('kbSearch').addEventListener('input', function(e){
+    keyword = e.target.value.trim(); renderDict();
+  });
+
+  /* 初始化 */
+  renderPolicy(); selectTask(0);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape' || current === 's1') return;
+    if (current === 's5') go(last === 's5' ? 's1' : last);
+    else go(current === 's4' ? 's3' : (current === 's3' ? 's2' : 's1'));
+  });
+})();
+</script>
+</body>
+</html>
