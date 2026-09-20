@@ -173,10 +173,14 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
 
 .agroup{display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--input);border-radius:12px;}
 .agroup + .agroup{margin-top:14px;}
-.agroup-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;
+.agroup-head{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:10px;
   background:#fff;border:1px dashed rgba(0,82,217,.4);}
 .agroup-head .no{font-size:12px;font-weight:600;color:var(--brand);font-family:var(--mono);}
-.agroup-head .l{display:flex;align-items:center;min-width:0;}
+.agroup-head .l{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;width:100%;}
+.agroup-head .pol{display:flex;align-items:flex-start;gap:6px;min-width:0;}
+.agroup-head .pol .pk{font-size:12px;color:var(--t3);line-height:18px;flex:0 0 auto;}
+.agroup-head .pol .pv{display:flex;flex-direction:column;min-width:0;}
+.agroup-head .pol .pv .pn{font-size:12px;font-weight:500;color:var(--t1);font-family:var(--mono);line-height:18px;word-break:break-all;}
 .tasklist .tcard{margin:0;}
 .agroup .tcard{background:#fff;border-color:var(--line-2);}
 .agroup .tcard:active{background:var(--brand-bg);border-color:var(--brand);}
@@ -330,6 +334,10 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
 .nd-meta{font-size:11px;line-height:16px;color:var(--t4);}
 .nd-quote{background:#F7F8FA;border-radius:6px;padding:10px;font-size:12px;line-height:19px;color:var(--t2);}
 .nd-quote.warn{background:#FFF7E8;color:#8A4B0E;}
+/* 节点状态说明（业务确认版文案）：含复核人的节点可点「详情」展开复核人员信息 */
+.nd-copy{background:#F7F8FA;border-left:3px solid var(--success);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.nd-copy .tx{font-size:12px;line-height:19px;color:var(--success);}
+.nd-copy-more{align-self:flex-start;height:22px;padding:0 10px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;font-weight:500;}
 .nd-act{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:8px;background:var(--input);}
 .nd-act .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
 .nd-act .n{font-size:12px;font-weight:500;color:var(--t1);}
@@ -349,6 +357,13 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
 .nd-flds .nd-row + .nd-row{border-top:1px solid var(--line-2);}
 .nd-ent{flex:0 0 auto;height:22px;padding:0 8px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;line-height:20px;font-family:var(--font-cn);cursor:pointer;}
 .nd-ent.up{border-color:var(--warn);color:#8A4B0E;}
+/* 审核详情（审核类节点专用弹层） */
+.aud-kv{display:flex;flex-direction:column;}
+.aud-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:9px 0;font-size:13.5px;line-height:19px;}
+.aud-row .k{flex:0 0 auto;color:var(--t3);}
+.aud-row .v{flex:1;min-width:0;text-align:right;color:var(--t1);word-break:break-word;}
+.aud-lb{font-size:13px;line-height:18px;color:var(--t3);margin-top:6px;}
+.aud-box{background:var(--warn-bg);border-radius:8px;padding:11px 12px;font-size:13px;line-height:20px;color:#8A4B0E;}
 </style>
 </head>
 <body>
@@ -418,12 +433,6 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       <div class="sec-title"><span class="t">本保单保全任务</span></div>
       <div class="fltbar" id="fltBar" style="display:none;"></div>
       <div class="tasklist" id="taskList"></div>
-    </div>
-
-    <!-- 保单信息（保单维度，与子任务无关） -->
-    <div class="card info-card">
-      <div class="sec-title"><span class="t">保单信息</span></div>
-      <div class="ov-head"><span class="k" style="font-size:13px;color:var(--t3);flex:0 0 auto;">保单号</span><span class="ov-no" id="pNo">—</span></div>
     </div>
   </div>
 </section>
@@ -561,12 +570,12 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
 
 <div class="toast" id="toast"></div>
 
-<!-- 节点详情 · 卡点定位弹层 -->
+<!-- 节点详情弹层：审核类节点展示「审核详情」，其余节点展示「节点详情 · 卡点定位」 -->
 <div class="ndmodal" id="ndMask">
-  <div class="ndcard">
-    <div class="ndhead"><span class="t">节点详情 · 卡点定位</span><button class="ndclose" id="ndClose">✕</button></div>
+  <div class="ndcard" id="ndCard">
+    <div class="ndhead"><span class="t" id="ndTitle">节点详情 · 卡点定位</span><button class="ndclose" id="ndClose">✕</button></div>
     <div class="ndbody" id="ndBody"></div>
-    <div class="actionbar" style="padding:0;background:none;border-top:none;">
+    <div class="actionbar" id="ndFoot" style="padding:0;background:none;border-top:none;">
       <button class="btn btn-primary" id="ndOk">关闭</button>
     </div>
   </div>
@@ -591,7 +600,7 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
   /* 节点详情弹层关闭（弹层在下方「八之二」统一绑定） */
 
   /* ==========================================================
-     一、8 种节点状态定义
+     一、9 种节点状态定义
      mode: run 进行中 / fail 失败阻断 / done 完成 / cancel 撤销
      node: 状态在主链路 / 分支中的位置（由 PATHS 推导时间轴）
      ========================================================== */
@@ -640,31 +649,44 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       n:'客户已签字待复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 待复核',
       mean:'客户签字单证与人脸识别影像已回传，任务已上送营运中心高级保全（按保单归属地）复核。',
       owner:'营运中心高级保全',
-      next:'等待复核结论；复核通过生成电子批单，审核不通过则流转「待对方回传资料」。',
+      next:'等待复核结论：复核通过生成电子批单；材料不全流转「待对方回传资料」；复核不通过则任务终止。',
       why:'—（正常等待，可联系营运中心高级保全确认进度）',
       api:'second',
       todo:[['1','等待营运中心高级保全完成复核'],['1','复核资料：审核影像 + 已签署确认单 + 人脸识别影像'],['0','正常等待，无需额外操作']],
-      guide:[['1','复核重点核对服务受理单 PDF 中所有保全项的详细内容'],['2','2.0 投保人变更需核对确认单上是否有新投保人信托公司签章'],['3','审核不通过时任务流转「待对方回传资料」'],['!','复核通过后系统自动生成电子批单（含信托委托人、信托受益人）']]
+      guide:[['1','复核重点核对服务受理单 PDF 中所有保全项的详细内容'],['2','2.0 投保人变更需核对确认单上是否有新投保人信托公司签章'],['3','复核发现材料不全时流转「待对方回传资料」，补件后回到复核'],['!','复核通过后系统自动生成电子批单（含信托委托人、信托受益人）']]
     },
+    /* 复核发现材料不全：非终态。缺件说明回传对方，补齐后流转「对方资料补全后复核」继续复核
+       （区别于终态「审核不通过」——后者驳回后不可补件续办） */
     fileWait: {
       n:'待对方回传资料', tc:'warn', mode:'run', cat:'wait', type:'待补充 · 对方补件',
-      mean:'复核结论为审核不通过，需对方按不通过原因补传资料，补全后任务继续复核。',
+      mean:'保司复核发现材料不全，缺件说明已回传对方，等待对方补齐资料后再次进入复核。',
       owner:'对方 · 芯银保保全',
-      next:'对方补齐资料后任务流转「对方资料补全后复核」，继续复核流程。',
+      next:'对方补齐资料回传后，任务流转「对方资料补全后复核」，继续复核流程。',
       why:'监护关系证明缺失 · 第二投保人与被保险人关系证明缺失 · 签字影像不清晰需重传',
       api:'image / second',
-      todo:[['0','按审核不通过原因补齐对方资料'],['0','补传资料上传影像系统受理单下'],['1','补全后任务自动回到复核']],
-      guide:[['1','联系对方客户经理，按审核不通过原因补传资料'],['2','补传后由芯银保上传影像系统，复制到子任务号下'],['3','补全后任务流转「对方资料补全后复核」，继续复核'],['!','补传资料仍不符合要求的，可能再次退回本节点']]
+      todo:[['0','按缺件说明补齐对方资料'],['0','补传资料上传影像系统受理单下'],['1','补全后任务自动回到复核']],
+      guide:[['1','联系对方客户经理，按缺件说明补传资料'],['2','补传后由芯银保上传影像系统，复制到子任务号下'],['3','补全后任务流转「对方资料补全后复核」，继续复核'],['!','补传资料仍不符合要求的，复核可能再次退回本节点']]
     },
     recheck: {
       n:'对方资料补全后复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 补件后复核',
-      mean:'对方资料已补全，任务重新进入营运中心复核。',
+      mean:'对方补充资料已回传，任务重新进入营运中心高级保全（按保单归属地）复核。',
       owner:'营运中心高级保全',
       next:'等待复核结论；复核通过生成电子批单并回传对方。',
       why:'—（正常等待，可联系营运中心高级保全确认进度）',
       api:'second',
-      todo:[['1','等待复核完成'],['1','复核资料含补传的对方资料'],['0','正常等待，无需额外操作']],
+      todo:[['1','等待营运中心高级保全完成复核'],['1','复核资料含补传的对方资料'],['0','正常等待，无需额外操作']],
       guide:[['1','复核重点：补传资料与原影像、确认单信息一致性'],['2','复核通过后生成电子批单并回传对方'],['!','若补传资料仍不符合要求，可能再次退回「待对方回传资料」']]
+    },
+    /* 复核未通过：终态。驳回原因经 errMsg 回传对方后任务终止，时间轴止于本节点，不再有后续节点 */
+    reviewFail: {
+      n:'审核不通过', tc:'danger', mode:'fail', cat:'fail', type:'终止 · 复核未通过',
+      mean:'营运中心高级保全复核未通过，驳回原因已通过 errMsg 回传对方，任务终止，不再流转后续节点。',
+      owner:'营运中心高级保全',
+      next:'按驳回原因整改资料后，由对方重新发起保全变更申请。',
+      why:'签字影像不清晰 · 监护关系证明缺失 · 第二投保人与被保险人关系证明缺失 · 影像资料与保单信息不一致',
+      api:'second',
+      todo:[['0','查看复核驳回原因与复核人员信息'],['0','按驳回原因整改资料或影像'],['0','整改后由对方重新发起保全变更申请'],['1','审核不通过为终态，原任务不可恢复']],
+      guide:[['1','在节点详情中查看审核不通过原因与复核人员信息'],['2','联系对方客户经理，按驳回原因整改资料'],['3','整改完成后由对方重新发起保全变更申请'],['!','审核不通过不可补件续办，必须重新发起申请']]
     },
     done: {
       n:'完成', tc:'ok', mode:'done', cat:'done', type:'成功 · 终态',
@@ -688,8 +710,8 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       guide:[['1','本子任务属同一受理单号下的后续任务，暂未生成节点'],['2','在优先级最高的子任务上查看当前卡点与处理方式即可'],['3','优先级最高的子任务到达终态后，本任务状态自动同步，无需重新申请']]
     }
   };
-  var ST_KEYS = ['init','applyFail','signWait','canceled','signedWait','fileWait','recheck','done'];
-  /* 状态字典展示项：8 个节点状态 + 待生成 */
+  var ST_KEYS = ['init','applyFail','signWait','canceled','signedWait','fileWait','recheck','reviewFail','done'];
+  /* 状态字典展示项：9 个节点状态 + 待生成 */
   var DICT_KEYS = ST_KEYS.concat(['pending']);
 
   /* 业务优先级：同一受理单号下只有优先级最高的子任务走正常流程 */
@@ -724,11 +746,12 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
 
   /* ==========================================================
      二、生命周期主链路 + 分支节点
-     四条流转路径：
+     五条流转路径：
      ① 发起 → 申请失败（终态）
      ② 发起 → 待客户签字 → 已撤销（终态）
-     ③ 发起 → 待客户签字 → 已签字待复核 → 待对方回传资料（若有）→ 资料补全后复核 → 完成
+     ③ 发起 → 待客户签字 → 已签字待复核 → 待对方回传资料（若有）→ 对方资料补全后复核 → 完成
      ④ 发起 → 待客户签字 → 已签字待复核 → 完成
+     ⑤ 发起 → 待客户签字 → 已签字待复核 → 审核不通过（终态）
      ========================================================== */
   var MAIN = [
     {t:'对方发起申请'},
@@ -742,6 +765,77 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
   };
   /* 复核审核人信息（「待对方回传资料」节点可查看详情） */
   var AUDITOR = {name:'李伟', no:'B20518', tel:'021-5877 6621'};
+
+  /* ==========================================================
+     三之二、节点状态说明文案（业务确认版）
+     点开节点「详情」后展示；含复核人的节点可点「详情」展开复核人员信息
+     ========================================================== */
+  function auditorInfo(){
+    return '复核人员信息：姓名 ' + AUDITOR.name + '，工号 ' + AUDITOR.no + '，联系方式 ' + AUDITOR.tel;
+  }
+  var NODE_COPY = {
+    init: function(){ return '申请报文已接收'; },
+    applyFail: function(t){
+      return '保司校验未通过，失败原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起';
+    },
+    /* 待客户签字：文案固定，不随任务后续状态变化（已签字 / 已撤销都保留等待签署与 180 天提示）；
+       仅「确认单推送失败」这一异常链路单独提示，避免出现「推送成功」与实际不符 */
+    signWait: function(t, st){
+      if (t.signPush === 'fail') return '对方确认单推送失败，需排查推送问题后重新推送';
+      return '对方确认单推送成功，等待客户签署并回传签字单证，已等待 ' + (t.waitDays || 0) +
+             ' 天，超 180 天未签署将自动撤销';
+    },
+    /* 客户已签字待复核：文案固定，不随任务后续状态变化（材料不全 / 审核不通过 / 正常办结都一样）；
+       复核结论与缺件说明分别由后续节点「待对方回传资料」「审核不通过」承载 */
+    signedWait: function(t, st){
+      return '客户已回传签字单证，等待保司复核。' + auditorInfo();
+    },
+    /* 审核不通过（复核未通过） */
+    signedWaitFail: function(t){
+      return '复核不通过，驳回原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起。' + auditorInfo();
+    },
+    /* 审核不通过：时间轴上的独立终态节点（位于「客户已签字待复核」之后） */
+    reviewFail: function(t){
+      return '复核不通过，驳回原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起。' + auditorInfo();
+    },
+    /* 待对方回传资料（复核发现材料不全，非终态，补件后回复核）：文案固定，不随补件进度变化；
+       缺件说明不在节点外展示，统一放在「详情」弹层（复核人员信息 + 缺件说明） */
+    fileWait: function(t, st){
+      return '保司复核发现材料不全，需对方补充资料，对方补件完成后可再次进入复核。';
+    },
+    /* 对方资料补全后复核：文案固定，不随复核结果变化（复核结论由「完成」节点承载）；
+       复核人员信息仅放「详情」弹层，时间轴上由 nodeCopyBrief 隐去 */
+    recheck: function(t, st){
+      return '对方已回传补充资料，等待保司复核。' + auditorInfo();
+    },
+    done: function(){ return '保全任务变更完成，流程完结'; },
+    canceled: function(t){
+      return '撤销原因：' + (t.reason || '—') + '，任务结束';
+    }
+  };
+  /* 含复核人员信息的节点：文案默认收起，点「详情」展开 */
+  var AUDITOR_NODES = ['signedWait','signedWaitFail','reviewFail','recheck'];
+  /* 复核不通过时「客户已签字待复核」节点复用 signedWaitFail 文案 */
+  function nodeCopyKey(sk, failed){ return (sk === 'signedWait' && failed) ? 'signedWaitFail' : sk; }
+  function nodeCopyText(sk, task, failed, st){
+    var fn = NODE_COPY[nodeCopyKey(sk, failed)];
+    return fn ? fn(task, st) : '';
+  }
+  /* 简版文案：隐去复核人员信息（时间轴节点下方展示；完整版仅在「详情」弹层展示） */
+  function nodeCopyBrief(sk, task, failed, st){
+    var full = nodeCopyText(sk, task, failed, st);
+    if (!full) return '';
+    if (AUDITOR_NODES.indexOf(nodeCopyKey(sk, failed)) < 0) return full;
+    var short = full.replace(/。?复核人员信息：[^。]*。?/, function(m){ return m.charAt(0) === '。' ? '。' : ''; });
+    return short || full;
+  }
+  /* 弹层「节点说明」块：复核类节点（含复核人员信息）已改走「审核详情」精简弹层，
+     此处仅作非复核类节点的兜底渲染 */
+  function nodeCopyHTML(sk, task, failed, st){
+    var full = nodeCopyText(sk, task, failed, st);
+    if (!full) return '';
+    return '<div class="nd-copy"><span class="tx">' + full + '</span></div>';
+  }
 
   /* ==========================================================
      三、接口元数据
@@ -868,20 +962,22 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       side:'ins', sideText:'卡在保司侧',
       basis:'客户签字单证与人脸识别影像已回传并复制到子任务下，任务已上送营运中心高级保全（按保单归属地）二次审核。',
       hint:'签字件已回传 · 卡在保司复核',
-      /* 复核通过 → 直接到「完成」；复核不通过 → 才进入「待对方回传资料」（需补资料） */
+      /* 复核通过 → 完成；材料不全 → 待对方回传资料；复核不通过 → 终态，任务终止（后面没有节点） */
       doneHint:function(task){
-        return (task.status === 'done')
-          ? '复核通过，电子批单已生成'
-          : '复核不通过，不通过原因已回传对方，需对方补资料';
+        if (task.status === 'done') return '复核通过，电子批单已生成';
+        if (task.status === 'fileWait') return '复核发现材料不全，缺件说明已回传对方';
+        if (task.status === 'recheck') return '复核发现材料不全，对方补件后再次复核';
+        return '复核不通过，任务终止，整改后可重新发起';
       },
       ifaces:[
         {k:'signb', st:'ok',  tk:'sign', note:'签字确认单 + 人脸识别影像已回传，复制至受理单下全部子任务'},
         {k:'img485',st:'ok',  tk:'image',note:'保全服务受理单（485）+ 对方资料影像齐备'},
-        {k:'rtn3',  st:function(task){ return (task.status === 'fileWait' || task.status === 'recheck') ? 'ok' : 'pend'; },
+        {k:'rtn3',  st:function(task){ return (task.status === 'reviewFail' || task.status === 'fileWait' || task.status === 'recheck') ? 'ok' : 'pend'; },
                     tk:'second',
-                    note:function(task){ return (task.status === 'fileWait' || task.status === 'recheck')
-                      ? ('复核不通过，errMsg 已回传对方：' + (task.reason || '影像资料与保单信息不一致'))
-                      : '复核不通过时通过 errMsg 回传原因，当前尚未产生'; },
+                    note:function(task){
+                      if (task.status === 'reviewFail') return '复核不通过，驳回原因 errMsg 已回传对方：' + (task.reason || '影像资料与保单信息不一致');
+                      if (task.status === 'fileWait' || task.status === 'recheck') return '复核发现材料不全，缺件说明 errMsg 已回传对方：' + (task.suppList || task.reason || '材料不全，需补充资料');
+                      return '复核不通过 / 材料不全时通过 errMsg 回传原因，当前尚未产生'; },
                     doneNote:'复核通过，无 errMsg 回传'}
       ],
       locate:'对方资料已全部回传，卡点在保司侧（营运中心复核），无需反复催对方；复核重点为服务受理单 PDF 与确认单签章一致性。',
@@ -890,16 +986,16 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     },
     fileWait: {
       side:'bank', sideText:'卡在对方侧',
-      basis:'复核结论为审核不通过，不通过原因已回传对方，等待对方按原因补传资料后继续复核。',
-      hint:'不通过原因已回传对方 · 卡在对方侧',
+      basis:'保司复核发现材料不全，缺件说明已回传对方，等待对方按缺件说明补传资料后继续复核。',
+      hint:'缺件说明已回传对方 · 卡在对方侧',
       doneHint:'对方补件已回传，任务回到复核',
       ifaces:[
-        {k:'rtn3',  st:'ok',  tk:'second', note:function(task){ return 'errMsg 已回传对方：' + (task.reason || '影像资料与保单信息不一致'); }},
+        {k:'rtn3',  st:'ok',  tk:'second', note:function(task){ return '缺件说明 errMsg 已回传对方：' + (task.suppList || task.reason || '材料不全，需补充资料'); }},
         {k:'suppb', st:'wait',tk:'suppDate', note:'对方补充资料影像，由芯银保上传影像系统并复制到子任务下'},
         {k:'rtn2',  st:'pend',tk:'', note:'变更成功后才上送批单文件，当前未触发'}
       ],
-      locate:'保司侧已复核并回传不通过原因，卡点在对方侧（补传资料）。把不通过原因原话转给对方客户经理即可，无需运维定位。',
-      action:'联系对方客户经理按不通过原因补传资料 → 芯银保上传影像 → 任务自动回到复核。',
+      locate:'保司侧已复核并回传缺件说明，卡点在对方侧（补传资料）。把缺件说明原话转给对方客户经理即可，无需运维定位。',
+      action:'联系对方客户经理按缺件说明补传资料 → 芯银保上传影像 → 任务自动回到复核。',
       who:CONTACT.bank
     },
     recheck: {
@@ -942,14 +1038,20 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     var v = d.doneHint;
     return (typeof v === 'function') ? v(task) : v;
   }
+  /* 确认单推送失败：待客户签字节点转为「推送失败 · 需重新推送」分支 */
+  function isPushFailed(task, sk){
+    return sk === 'signWait' && !!task && task.signPush === 'fail' && task.status === 'signWait';
+  }
   function diagHint(sk, st, task){
     var d = NODE_DIAG[sk];
     if (!d) return '';
-    return (st === 'done') ? (doneHintOf(d, task) || '已完成') : d.hint;
+    if (st === 'done') return doneHintOf(d, task) || '已完成';
+    if (isPushFailed(task, sk)) return '确认单推送失败 · 需排查后重新推送';
+    return d.hint;
   }
-  /* 复核不通过（走补资料分支）时，签字待复核节点为「不通过」而非「已通过」 */
+  /* 复核未通过（终态）时，签字待复核节点为「审核不通过」而非「已通过」 */
   function isReviewFailed(task, sk){
-    return sk === 'signedWait' && (task.status === 'fileWait' || task.status === 'recheck');
+    return sk === 'reviewFail' && task.status === 'reviewFail';
   }
 
   /* ==========================================================
@@ -981,7 +1083,9 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     ],
     signWait: [
       {k:'推送渠道', core:1, v:PUSH_CH},
-      {k:'推送状态', core:1, v:function(t){ return t.pushStatus || '推送成功 · 已收到对方接收回执（returnCode=SUCCESS）'; }},
+      {k:'推送状态', core:1, v:function(t){ return t.pushStatus || ((t.signPush === 'fail')
+         ? '推送失败 · 未收到对方接收回执，需排查推送问题后重新推送'
+         : '推送成功 · 已收到对方接收回执（returnCode=SUCCESS）'); }},
       {k:'推送时间', core:1, v:function(t){ return (t.times && t.times.first) || t.dates[1] || ''; }},
       {k:'客户手机号', core:1, v:CUST_TEL},
       {k:'确认单预览', core:1, v:function(t){ return hasImg(t, '486') ? '对方确认单（影像 486）' : ''; },
@@ -1006,12 +1110,12 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       {k:'审核意见', core:1, v:function(t){ return t.auditOpinion || '影像资料与系统信息不一致，需按不通过原因补充资料后重新复核'; }},
       {k:'审核人', core:1, v:function(){ return AUDITOR.name + '（工号 ' + AUDITOR.no + '）'; }},
       {k:'审核时间', core:1, v:function(t){ return (t.times && t.times.second) || ''; }},
-      {k:'整改项清单', core:1, v:function(t){ return t.fixList || '按不通过原因补齐对应影像 / 证明材料，补件回传后任务自动回到复核'; }},
-      {k:'是否支持重提', core:1, v:function(t){ return t.reapply || '支持补件重提（原任务自动回到复核，无需重新发起申请）'; }}
+      {k:'整改项清单', core:1, v:function(t){ return t.fixList || '按驳回原因整改对应影像 / 证明材料，整改完成后重新发起申请'; }},
+      {k:'是否支持重提', core:1, v:function(t){ return t.reapply || '不支持补件续办：审核不通过为终态，需按驳回原因整改后由对方重新发起保全变更申请'; }}
     ],
     fileWait: [
       {k:'需补充资料清单', core:1, v:function(t){ return t.suppList || t.reason || '按审核不通过原因补齐对应资料'; }},
-      {k:'资料要求说明', core:1, v:'按不通过原因补传，影像需清晰完整、与确认单信息一致'},
+      {k:'资料要求说明', core:1, v:'按缺件说明补传，影像需清晰完整、与确认单信息一致'},
       {k:'最晚回传时限', core:1, v:function(t){ return t.suppDeadline || '自复核不通过之日起 7 个自然日内回传'; }},
       {k:'资料上传', core:1, v:'芯银保上传影像系统受理单下，成功后复制到子任务号',
        ent:function(){ return {t:'上传', a:'补充资料上传', up:1}; }}
@@ -1068,11 +1172,13 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     var s = task.status;
     if (k === 'apply')  return 'ok';
     if (k === 'image')  return (s === 'init') ? 'running' : 'ok';
-    if (k === 'first')  return (s === 'init') ? 'pending' : ((s === 'applyFail') ? 'fail' : 'ok');
+    if (k === 'first')  return (s === 'init') ? 'pending' : ((s === 'applyFail') ? 'fail'
+                          : ((s === 'signWait' && task.signPush === 'fail') ? 'fail' : 'ok'));
     if (k === 'sign')   return (s === 'signWait') ? 'wait' : ((s === 'canceled') ? 'fail'
-                          : ((['signedWait','fileWait','recheck','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
-    if (k === 'second') return (s === 'signedWait') ? 'running' : ((s === 'fileWait') ? 'wait'
-                          : ((s === 'recheck') ? 'running' : ((s === 'done') ? 'ok' : 'pending')));
+                          : ((['signedWait','fileWait','recheck','reviewFail','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
+    /* 复核结果：待复核=处理中；材料不全 / 补件后复核 / 完成=已回传结论；审核不通过=失败 */
+    if (k === 'second') return (s === 'signedWait') ? 'running' : ((s === 'reviewFail') ? 'fail'
+                          : ((['fileWait','recheck','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
     if (k === 'file')   return (s === 'done') ? 'ok' : 'pending';
     if (k === 'cancel') return (s === 'canceled') ? 'ok' : 'pending';
     return 'pending';
@@ -1080,8 +1186,11 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
   /* ==========================================================
      四、数据
      ========================================================== */
+  /* 「待客户签字」文案固定展示「已等待 N 天」，故各状态给一个合理的演示等待天数 */
+  var WAIT_DAYS_DEFAULT = {signWait:18, signedWait:12, fileWait:12, recheck:12, reviewFail:9, done:12, canceled:183};
   function T(id, name, status, opt){
-    var t = {id:id, name:name, status:status, dates:[], times:{}, images:null, reason:'', audit:['—','—'], waitDays:0};
+    var t = {id:id, name:name, status:status, dates:[], times:{}, images:null, reason:'', audit:['—','—'],
+             waitDays:(WAIT_DAYS_DEFAULT[status] || 0)};
     if (opt) for (var k in opt) t[k] = opt[k];
     return t;
   }
@@ -1090,17 +1199,19 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     'SH20250920001866': {
       no:'SH20250920001866', mode:'2.0 投保人变更', product:'太保鑫福利（A款）两全保险（分红型）', holder:'张**', insured:'李**（未成年）',
       acceptNo:'2120250920001', way:'代办', trustName:'招银国际信托有限公司',
+      /* 受理单号 2120250920001 下三笔子任务：数组顺序故意把「待生成」的两笔排在前面，
+         用于验证 S2 渲染时「待生成」会被排到其余子任务之后 */
       tasks:[
-        T('8320250920001','身故受益人变更','signWait',{waitDays:18,
-          reason:'客户尚未完成对方确认单签署',
-          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'},
-          dates:['2025-09-18 09:40','2025-09-20 14:30','','']}),
         T('8320250920002','生存金受益人变更','init',{
           times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33'},
           dates:['2025-09-18 09:40','','','']}),
         T('8320250920003','投保人变更','signedWait',{
           times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18', sign:'2025-09-22 10:12:44'},
-          dates:['2025-09-18 09:40','2025-09-20 14:30','2025-09-22 10:12','']})
+          dates:['2025-09-18 09:40','2025-09-20 14:30','2025-09-22 10:12','']}),
+        T('8320250920001','身故受益人变更','signWait',{waitDays:18,
+          reason:'客户尚未完成对方确认单签署',
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'},
+          dates:['2025-09-18 09:40','2025-09-20 14:30','','']})
       ]
     },
     /* 同一受理单号 2120250920001 下挂两张保单（同一客户张**），演示「一受理单号 → 多保单号」 */
@@ -1117,28 +1228,31 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       afters:{'指定第二投保人变更':'周**'},
       acceptNo:'2120250916007', way:'亲办', trustName:'华宝信托有限责任公司',
       tasks:[
+        /* 路径 ③ 进行中：复核发现材料不全 → 待对方回传资料 */
         T('8320250916001','指定第二投保人变更','fileWait',{
-          reason:'第二投保人与被保险人关系证明不清晰，需对方补传',
+          reason:'第二投保人与被保险人关系证明不清晰',
           suppList:'① 第二投保人与被保险人关系证明 ② 第二投保人证件影像正反面',
           suppDeadline:'2025-09-26 18:00',
           times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
-          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25',''],
-          suppDate:'2025-09-19 15:05'}),
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']}),
         T('8320250916002','身故受益人变更','fileWait',{
-          reason:'身故受益人身份证明不清晰，需对方补传',
+          reason:'身故受益人身份证明不清晰',
           suppList:'① 身故受益人身份证明（清晰扫描件）② 受益人与被保人关系证明',
           suppDeadline:'2025-09-26 18:00',
           times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
-          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25',''],
-          suppDate:'2025-09-19 15:05'}) ]
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']}) ]
     },
+    /* 路径 ③ 办结：发起 → 签字 → 复核发现材料不全 → 待对方回传资料 → 补全后复核 → 完成 */
     'SH20250912000918': {
       no:'SH20250912000918', mode:'1.0 身故受益人变更', product:'太保相伴一生年金保险（分红型）', holder:'赵**', insured:'赵**（成年）',
       acceptNo:'2120250912003', way:'亲办', trustName:'平安信托有限责任公司',
       tasks:[ T('8320250912001','身故受益人变更','done',{
+        reason:'监护关系证明不清晰',
+        suppList:'① 监护关系证明（清晰扫描件）② 监护人证件影像正反面',
+        suppDate:'2025-09-14 10:22:16', reDate:'2025-09-15 09:40:02',
         times:{apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02',
-               first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-15 15:20:44', file:'2025-09-15 15:26:09'},
-        dates:['2025-09-12 14:03','2025-09-13 10:16','2025-09-15 15:20','2025-09-15 15:26']}) ]
+               first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-13 16:48:20', file:'2025-09-15 15:26:09'},
+        dates:['2025-09-12 14:03','2025-09-13 10:16','2025-09-13 16:48','2025-09-15 15:26']}) ]
     },
     'SH20250908000731': {
       no:'SH20250908000731', mode:'2.0 投保人变更', product:'太保鑫福临门（C款）两全保险（分红型）', holder:'孙**', insured:'孙**（未成年）',
@@ -1166,27 +1280,47 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
           reason:'客户尚未完成对方确认单签署',
           times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
           dates:['2025-09-05 09:22','2025-09-05 16:40','','']}),
-        T('8320250905002','身故受益人变更','signWait',{waitDays:9,
-          reason:'客户尚未完成对方确认单签署',
+        T('8320250905002','身故受益人变更','signWait',{waitDays:9, signPush:'fail',
+          reason:'对方确认单推送失败，需排查推送问题后重新推送',
           times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
           dates:['2025-09-05 09:22','2025-09-05 16:40','','']}) ]
     },
+    /* 路径 ③ 进行中：对方已回传补充资料 → 等待保司再次复核 */
     'SH20250901000256': {
       no:'SH20250901000256', mode:'2.0 投保人变更', product:'太保长相伴（庆典版）终身寿险（分红型）', holder:'郑**', insured:'郑**（未成年）',
       acceptNo:'2120250901005', way:'代办', trustName:'招银国际信托有限公司',
       tasks:[
         T('8320250901001','投保人变更','recheck',{
-          reason:'签字影像不清晰，对方已补传',
+          reason:'签字影像不清晰，不满足复核要求',
+          suppList:'① 客户签字确认单（清晰扫描件）② 客户证件影像正反面',
+          suppDate:'2025-09-04 17:05:12', reDate:'2025-09-05 09:30:08',
           times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
                  first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
-          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18',''],
-          suppDate:'2025-09-04 17:05', reDate:'2025-09-05 09:30'}),
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']}),
         T('8320250901002','身故受益人变更','recheck',{
-          reason:'签字影像不清晰，对方已补传',
+          reason:'签字影像不清晰，不满足复核要求',
+          suppList:'① 客户签字确认单（清晰扫描件）② 客户证件影像正反面',
+          suppDate:'2025-09-04 17:05:12', reDate:'2025-09-05 09:30:08',
           times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
                  first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
-          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18',''],
-          suppDate:'2025-09-04 17:05', reDate:'2025-09-05 09:30'}) ]
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']}) ]
+    },
+    /* 路径 ⑤：复核不通过 → 终态（驳回原因回传对方，任务终止，后面没有节点） */
+    'SH20250918000612': {
+      no:'SH20250918000612', mode:'1.5 指定第二投保人', product:'太保鑫从容（D款）两全保险（分红型）', holder:'冯**', insured:'冯**（未成年）',
+      afters:{'指定第二投保人变更':'许**'},
+      acceptNo:'2120250918008', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250918001','指定第二投保人变更','reviewFail',{
+          reason:'第二投保人与被保险人关系证明缺失，且影像与系统信息不一致',
+          auditOpinion:'资料与系统登记信息不一致，驳回处理；请整改后重新发起保全变更申请',
+          times:{apply:'2025-09-18 09:15:22', image:'2025-09-18 09:16:40', first:'2025-09-18 15:20:11', sign:'2025-09-19 10:05:33', second:'2025-09-20 16:12:07'},
+          dates:['2025-09-18 09:15','2025-09-18 15:20','2025-09-19 10:05','']}),
+        T('8320250918002','身故受益人变更','reviewFail',{
+          reason:'身故受益人身份证明缺失，且影像与系统信息不一致',
+          auditOpinion:'资料与系统登记信息不一致，驳回处理；请整改后重新发起保全变更申请',
+          times:{apply:'2025-09-18 09:15:22', image:'2025-09-18 09:16:40', first:'2025-09-18 15:20:11', sign:'2025-09-19 10:05:33', second:'2025-09-20 16:12:07'},
+          dates:['2025-09-18 09:15','2025-09-18 15:20','2025-09-19 10:05','']}) ]
     },
     'SH20250928000104': {
       no:'SH20250928000104', mode:'1.0 身故受益人变更', product:'太保鑫福利（B款）两全保险（分红型）', holder:'吴**', insured:'吴**（成年）',
@@ -1208,17 +1342,17 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
         T('8320250815001','指定第二投保人变更','canceled',{
           reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
           cancelType:'超时自动撤销', cancelBy:'系统自动（签字超 180 天未回传触发）',
-          waitDays:30, cancelTime:'2025-09-15 00:05',
-          times:{apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51',
-                 first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'},
-          dates:['2025-08-15 10:12','2025-08-15 16:42','','']}),
+          waitDays:183, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-03-10 10:12:04', image:'2025-03-10 10:13:51',
+                 first:'2025-03-10 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-03-10 10:12','2025-03-10 16:42','','']}),
         T('8320250815002','身故受益人变更','canceled',{
           reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
           cancelType:'超时自动撤销', cancelBy:'系统自动（签字超 180 天未回传触发）',
-          waitDays:30, cancelTime:'2025-09-15 00:05',
-          times:{apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51',
-                 first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'},
-          dates:['2025-08-15 10:12','2025-08-15 16:42','','']}) ]
+          waitDays:183, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-03-10 10:12:04', image:'2025-03-10 10:13:51',
+                 first:'2025-03-10 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-03-10 10:12','2025-03-10 16:42','','']}) ]
     }
   };
 
@@ -1234,16 +1368,17 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       var acc = '2120250900000' + (i + 1);
       var t = T(id, names[i % 4], k, {
         accept:acc,
-        waitDays:(k === 'signWait' ? 18 : (k === 'canceled' ? 30 : 0)),
+        waitDays:(k === 'signWait' ? 18 : (k === 'canceled' ? 183 : 12)),
         cancelTime:'2025-09-15 00:05'
       });
       if (k === 'init'){ t.times = {apply:'2025-09-28 16:40:02', image:'2025-09-28 16:41:20'}; t.dates = ['2025-09-28 16:40','','','']; }
       if (k === 'applyFail'){ t.reason = '客户信息属于反洗钱监控名单（以实际接口返回内容为准）'; t.failCode = 'PBFTISF2X3 · resultCode=1002（反洗钱名单命中）'; t.times = {apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'}; t.dates = ['2025-09-08 11:04','','','']; t.failDate = '2025-09-09 10:18'; }
       if (k === 'signWait'){ t.times = {apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'}; t.dates = ['2025-09-18 09:40','2025-09-20 14:30','','']; }
-      if (k === 'canceled'){ t.reason = '超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）'; t.cancelType = '超时自动撤销'; t.cancelBy = '系统自动（签字超 180 天未回传触发）'; t.times = {apply:'2025-08-15 10:12:04', image:'2025-08-15 10:13:51', first:'2025-08-15 16:42:09', cancel:'2025-09-15 00:05:00'}; t.dates = ['2025-08-15 10:12','2025-08-15 16:42','','']; }
+      if (k === 'canceled'){ t.reason = '超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）'; t.cancelType = '超时自动撤销'; t.cancelBy = '系统自动（签字超 180 天未回传触发）'; t.times = {apply:'2025-03-15 10:12:04', image:'2025-03-15 10:13:51', first:'2025-03-15 16:42:09', cancel:'2025-09-15 00:05:00'}; t.dates = ['2025-03-15 10:12','2025-03-15 16:42','','']; }
       if (k === 'signedWait'){ t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
-      if (k === 'fileWait'){ t.reason = '监护关系证明不清晰，需对方补传'; t.suppList = '① 监护关系证明（清晰扫描件，需体现监护人与被保人关系）② 监护人证件影像正反面'; t.suppDeadline = '2025-09-26 18:00'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; t.suppDate = '2025-09-19 15:05'; }
-      if (k === 'recheck'){ t.reason = '签字影像不清晰，对方已补传'; t.times = {apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02', first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'}; t.dates = ['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']; t.suppDate = '2025-09-04 17:05'; t.reDate = '2025-09-05 09:30'; }
+      if (k === 'fileWait'){ t.reason = '监护关系证明不清晰'; t.suppList = '① 监护关系证明（清晰扫描件，需体现监护人与被保人关系）② 监护人证件影像正反面'; t.suppDeadline = '2025-09-26 18:00'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
+      if (k === 'recheck'){ t.reason = '签字影像不清晰'; t.suppList = '① 客户签字确认单（清晰扫描件）② 客户证件影像正反面'; t.times = {apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02', first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'}; t.dates = ['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']; t.suppDate = '2025-09-04 17:05'; t.reDate = '2025-09-05 09:30'; }
+      if (k === 'reviewFail'){ t.reason = '签字影像不清晰，不满足复核要求'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
       if (k === 'done'){ t.times = {apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02', first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-15 15:20:44', file:'2025-09-15 15:26:09'}; t.dates = ['2025-09-12 14:03','2025-09-13 10:16','2025-09-15 15:20','2025-09-15 15:26']; }
       demo.tasks.push(t);
     });
@@ -1265,10 +1400,13 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     if (s === 'applyFail') return base;
     if (s === 'signWait') return base.concat([[1,'对方确认单（486）· 待客户签署']]);
     if (s === 'canceled') return base.concat([[1,'对方确认单（486）· 未签署']]);
-    if (s === 'signedWait') return base.concat([[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像']]);
-    if (s === 'fileWait') return base.concat([[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像'],[0,'补充资料 · 待对方回传']]);
-    if (s === 'recheck') return base.concat([[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像'],[1,'补充资料 · 已回传']]);
-    return base.concat([[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像'],[1,'电子批单 · 已生成']]);
+    var mid = [[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像']];
+    if (s === 'signedWait' || s === 'reviewFail') return base.concat(mid);
+    if (s === 'fileWait') return base.concat(mid, [[0,'补充资料 · 待对方回传']]);
+    if (s === 'recheck')  return base.concat(mid, [[1,'补充资料 · 已回传']]);
+    /* 走补件链路办结的，影像清单含补充资料 */
+    if (s === 'done' && (task.suppDate || task.reDate)) return base.concat(mid, [[1,'补充资料 · 已回传'],[1,'电子批单 · 已生成']]);
+    return base.concat(mid, [[1,'电子批单 · 已生成']]);
   }
 
   /* ==========================================================
@@ -1303,10 +1441,6 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       el.textContent = nos[0];
     }
   }
-  /* 保单信息（保单维度，不随子任务切换变化） */
-  function renderPolicyInfo(acc){
-    renderPolicyNo(document.getElementById('pNo'), acc);
-  }
   function renderPolicy(){
     var p = curPolicy;
 
@@ -1336,11 +1470,27 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       fltBar.innerHTML = '';
     }
     /* 保单信息：保单号按当前展示的受理单号聚合（一个受理单号可挂多张保单） */
-    renderPolicyInfo(groups.length ? groups[0].no : '');
+    /* 排序：「待生成」的子任务排在其余子任务之后；其余按业务优先级排列
+       （身故受益人变更 → 生存金受益人变更 → 投保人变更 → 指定第二投保人变更） */
+    groups.forEach(function(g){
+      g.items.sort(function(a, b){
+        var pa = effView(p, a.i).status === 'pending' ? 1 : 0;
+        var pb = effView(p, b.i).status === 'pending' ? 1 : 0;
+        if (pa !== pb) return pa - pb;
+        return bizPriority(a.t.name) - bizPriority(b.t.name);
+      });
+    });
     taskList.innerHTML = groups.map(function(g){
+      /* 受理单号行：第二行展示该受理单号下的保单号（一个受理单号可挂多张保单，纵向罗列） */
+      var nos = policyNosOfAccept(g.no);
+      var polLine = nos.length
+        ? '<span class="pol"><span class="pk">保单号</span><span class="pv">' +
+            nos.map(function(n){ return '<span class="pn">' + n + '</span>'; }).join('') +
+          '</span></span>'
+        : '';
       var head =
         '<div class="agroup-head">' +
-          '<span class="l"><span class="no">受理单号 ' + g.no + '</span></span>' +
+          '<span class="l"><span class="no">受理单号 ' + g.no + '</span>' + polLine + '</span>' +
         '</div>';
       var cards = g.items.map(function(it){
         var i = it.i, tv = effView(p, i);   /* 业务优先级：非最高优先级任务按「待生成 / 同步」展示 */
@@ -1410,7 +1560,9 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     }
     function branchNode(key, st){
       var n = BRANCH[key];
-      var dt = (key === 'supp') ? task.suppDate : task.reDate;
+      /* 「待对方回传资料」缺件通知时间：无 suppDate 时回退到复核结果时间（times.second） */
+      var fallback = (task.times && task.times.second) ? task.times.second.slice(0, 16) : '';
+      var dt = (key === 'supp') ? (task.suppDate || fallback) : task.reDate;
       return {s:st, t:n.t, d:(dt || ''), sk:(key === 'supp' ? 'fileWait' : 'recheck'), detail:(st !== 'todo'), dkey:key};
     }
     var spec = {
@@ -1419,9 +1571,15 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       signWait:   [['done',0],['current',1],['todo',2],['todo',3]],
       canceled:   [['done',0],['done',1],['cancel']],
       signedWait: [['done',0],['done',1],['current',2],['todo',3]],
+      /* 复核发现材料不全 → 待对方回传资料 → 对方资料补全后复核 → 完成（路径 ③） */
       fileWait:   [['done',0],['done',1],['done',2],['current','supp'],['todo','re'],['todo',3]],
       recheck:    [['done',0],['done',1],['done',2],['done','supp'],['current','re'],['todo',3]],
-      done:       [['done',0],['done',1],['done',2],['done',3]]
+      /* 审核不通过：终态。保留「客户已签字待复核」节点，其后追加独立的「审核不通过」节点 */
+      reviewFail: [['done',0],['done',1],['done',2],['rf']],
+      /* 走补件链路办结的，时间轴补出「待对方回传资料 / 对方资料补全后复核」两个节点 */
+      done:       (task.suppDate || task.reDate)
+                  ? [['done',0],['done',1],['done',2],['done','supp'],['done','re'],['done',3]]
+                  : [['done',0],['done',1],['done',2],['done',3]]
     }[task.status] || [];
     return spec.map(function(step){
       var kind = step[0], ref = step[1];
@@ -1429,34 +1587,44 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
         return (typeof ref === 'number') ? mainNode(ref, kind) : branchNode(ref, kind);
       }
       if (kind === 'fail'){
-        return {s:'fail', t:'申请失败', sk:'applyFail', detail:true, dkey:'', d:(task.failDate ? task.failDate + '　' : '') + (task.reason || '申请校验未通过，任务终止')};
+        /* 失败原因已在节点下方业务文案中展示，此处仅保留失败时间，避免重复 */
+        return {s:'fail', t:'申请失败', sk:'applyFail', detail:true, dkey:'', d:(task.failDate || '')};
       }
-      return {s:'cancel', t:'已撤销', sk:'canceled', detail:true, dkey:'', d:(task.cancelTime ? task.cancelTime + '　' : '') + (task.reason || '任务撤销')};
+      if (kind === 'rf'){
+        /* 审核不通过（终态）：时间取复核结果时间 */
+        var rt = (task.times && task.times.second) ? task.times.second.slice(0, 16) : (task.dates[2] || '');
+        return {s:'fail', t:'审核不通过', sk:'reviewFail', detail:true, dkey:'', d:rt};
+      }
+      /* 撤销原因已在节点下方业务文案中展示，此处仅保留撤销时间，避免重复 */
+      return {s:'cancel', t:'已撤销', sk:'canceled', detail:true, dkey:'', d:(task.cancelTime || '')};
     });
   }
+  /* 时间轴「详情」入口白名单：仅「客户已签字待复核」「待对方回传资料」「对方资料补全后复核」
+     与「审核不通过」四类节点开放下钻，查看复核人员信息（缺件说明 / 不通过原因）；
+     其余节点不显示详情按钮 */
+  var DETAIL_NODES = {signedWait:1, fileWait:1, recheck:1, reviewFail:1};
   /* 时间轴节点 HTML：S3 详情页与 S2 子任务折叠面板共用 */
   function timelineNodesHTML(task){
     var nodes = mkNodes(task);
     return nodes.map(function(n, i){
       var last = i === nodes.length - 1;
-      /* 复核未通过：签字待复核节点按需求文档展示为「审核不通过」节点 */
-      var failedNode = (n.sk === 'signedWait' && n.s === 'done' && isReviewFailed(task, n.sk));
+      /* 审核不通过：独立终态节点（红点红字，文案红色） */
+      var failNode = (n.sk === 'reviewFail');
       var lineCls = (n.s === 'done') ? '' : ' off';
-      var tCls = failedNode ? ' fail' : ((n.s === 'current') ? ' cur' : ((n.s === 'fail') ? ' fail' : ((n.s === 'cancel') ? ' cancel' : ((n.s === 'todo') ? ' todo' : ''))));
+      var tCls = failNode ? ' fail' : ((n.s === 'current') ? ' cur' : ((n.s === 'fail') ? ' fail' : ((n.s === 'cancel') ? ' cancel' : ((n.s === 'todo') ? ' todo' : ''))));
       var dCls = (n.s === 'current') ? ' cur' : '';
-      var dg = NODE_DIAG[n.sk];
-      var hint = diagHint(n.sk, n.s, task);
-      var hCls;
-      if (!dg){ hCls = ' ok'; }
-      else if (n.s === 'done'){ hCls = isReviewFailed(task, n.sk) ? ' fail' : ' ok'; }
-      else { hCls = (dg.side === 'bank' || dg.side === 'cust') ? ' wait' : ''; }
+      /* 节点下方信息：展示业务确认版节点文案；复核人员信息仅放在「详情」弹层，此处隐去 */
+      var hint = nodeCopyBrief(n.sk, task, failNode, n.s) || diagHint(n.sk, n.s, task);
+      /* 文案颜色统一为绿色；仅「审核不通过」节点保留红色以示异常 */
+      var hCls = failNode ? ' fail' : ' ok';
+      var showDetail = !!n.detail && !!DETAIL_NODES[n.sk];
       return '<div class="tl-node">' +
-        '<div class="tl-col"><div class="tl-dot ' + (failedNode ? 'fail' : n.s) + '"></div>' +
+        '<div class="tl-col"><div class="tl-dot ' + n.s + '"></div>' +
         (last ? '' : '<div class="tl-line' + lineCls + '"></div>') + '</div>' +
-        '<div class="tl-right"><span class="t' + tCls + '">' + (failedNode ? '审核不通过' : n.t) + '</span>' +
+        '<div class="tl-right"><span class="t' + tCls + '">' + n.t + '</span>' +
         (n.d ? '<span class="d' + dCls + '">' + n.d + '</span>' : '') +
-        (n.detail ? '<span class="tl-hint' + hCls + '">' + hint + '</span>' +
-                    '<button class="tl-detail" data-node="' + n.sk + '" data-st="' + n.s + '">详情</button>' : '') +
+        (n.detail ? '<span class="tl-hint' + hCls + '">' + hint + '</span>' : '') +
+        (showDetail ? '<button class="tl-detail" data-node="' + n.sk + '" data-st="' + n.s + '">详情</button>' : '') +
         '</div></div>';
     }).join('');
   }
@@ -1492,6 +1660,16 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     showToast('原型演示：打开「' + b.getAttribute('data-prev') + '」');
   });
 
+  /* 节点说明「详情」：展开完整文案（含复核人员信息） */
+  document.getElementById('ndBody').addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.nd-copy-more') : null;
+    if (!b) return;
+    e.stopPropagation();
+    var box = b.parentNode, tx = box.querySelector('.tx');
+    if (tx) tx.textContent = b.getAttribute('data-full');
+    b.remove();
+  });
+
   /* 接口行数据：弹层接口报文清单渲染 */
   function ifaceInfo(task, it, done, failed){
     var m = IFACE_META[it.k] || {code:'—', name:it.k, dir:'—'};
@@ -1499,6 +1677,11 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     var forced = done && !failed;   /* 复核不通过时按实际未通过态展示，不套用「已完成」文案 */
     if (forced){ st = it.doneSt || ((st === 'run' || st === 'wait') ? 'ok' : st); }
     var src = forced ? (it.doneNote || it.note) : it.note;
+    /* 确认单推送失败：486 推送行改为失败态与失败说明 */
+    if (!done && it.k === 'img486' && task && task.signPush === 'fail'){
+      st = 'fail';
+      src = '对方确认单（影像 486）推送失败，未收到对方接收回执，需排查推送问题后重新推送';
+    }
     return {m:m, st:st, stx:(IFACE_ST[st] || IFACE_ST.pend), time:timeOf(task, it.tk),
             note:(typeof src === 'function') ? src(task) : src};
   }
@@ -1512,15 +1695,54 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       (note ? '<div class="nd-meta">' + note + '</div>' : '') +
     '</div>';
   }
+  /* ==========================================================
+     审核详情弹层：仅「客户已签字待复核 / 待对方回传资料 / 对方资料补全后复核 / 审核不通过」
+     四类白名单节点（DETAIL_NODES）使用
+     ========================================================== */
+  function audRow(k, v){
+    return '<div class="aud-row"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>';
+  }
+  function auditDetailHTML(sk, task, failed){
+    var h = '<div class="aud-kv">' +
+      audRow('审核人', AUDITOR.name) +
+      audRow('审核人工号', AUDITOR.no) +
+      audRow('审核人联系方式', AUDITOR.tel) +
+    '</div>';
+    if (sk === 'reviewFail'){                    /* 审核不通过（终态节点） */
+      h += '<span class="aud-lb">审核不通过原因</span>' +
+           '<div class="aud-box">' + (task.reason || '—') + '</div>';
+    } else if (sk === 'fileWait'){
+      /* 仅「待对方回传资料」展示缺件说明；「对方资料补全后复核」已补件，不再显示 */
+      h += '<span class="aud-lb">缺件说明</span>' +
+           '<div class="aud-box">' + (task.suppList || task.reason || '—') + '</div>';
+    }
+    return h;
+  }
   function openNodeDetail(sk, st){
     var task = curPolicy.tasks[curTask];
-    var d = NODE_DIAG[sk], s = STATUS[sk];
-    if (!d || !s) return;
+    var d = NODE_DIAG[sk] || {}, s = STATUS[sk];
+    if (!s) return;
     var done = (st === 'done');
-    var failed = done && isReviewFailed(task, sk);   /* 已签字待复核但复核不通过（走补资料分支） */
-    var sideCls = done ? (failed ? 'bank' : 'none') : d.side;
-    var sideTxt = done ? (failed ? '复核不通过 · 卡在对方侧' : '已通过 · 无需处理') : d.sideText;
-    var sideDesc = done ? ('本节点已完成：' + (doneHintOf(d, task) || '接口均已推送成功并收到成功回执') + '。') : d.basis;
+    var failed = isReviewFailed(task, sk);           /* 复核不通过（审核不通过节点） */
+    /* 审核类节点 → 精简版「审核详情」（仅审核人信息 + 不通过原因 / 缺件说明） */
+    if (DETAIL_NODES[sk]){
+      document.getElementById('ndTitle').textContent = '审核详情';
+      document.getElementById('ndFoot').style.display = 'none';
+      document.getElementById('ndBody').innerHTML = auditDetailHTML(sk, task, failed);
+      ndMask.classList.add('show');
+      return;
+    }
+    if (!d.side) return;
+    document.getElementById('ndTitle').textContent = '节点详情 · 卡点定位';
+    document.getElementById('ndFoot').style.display = '';
+    var pushFail = (!done && isPushFailed(task, sk));
+    var sideCls = done ? (failed ? 'bank' : 'none') : (pushFail ? 'bank' : d.side);
+    var sideTxt = done ? (failed ? '复核不通过 · 任务终止' : '已通过 · 无需处理')
+                       : (pushFail ? '卡在对方侧 · 确认单推送失败' : d.sideText);
+    var sideDesc = done ? ('本节点已完成：' + (doneHintOf(d, task) || '接口均已推送成功并收到成功回执') + '。')
+                        : (pushFail
+                            ? '保司已受理成功并生成对方确认单，但确认单（486）推送未成功、未收到对方接收回执，客户暂时无法在对方侧签署。属推送链路问题，需排查后重新推送。'
+                            : d.basis);
     var who = failed ? CONTACT.bank : d.who;
     var html = '';
 
@@ -1528,6 +1750,11 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     /* 标题即节点名，右侧状态标签与标题同字（sk 即状态 key），故不再重复展示 */
     html += '<div class="ndhead" style="padding:0;"><span class="t">' + (failed ? '审核不通过' : s.n) + '</span>' +
             '<span class="tag ' + (failed ? 'danger' : 'ok') + '">' + (failed ? '已完成 · 复核未通过' : (done ? '已完成' : '当前节点')) + '</span></div>';
+    /* 节点状态说明（业务确认版文案）：含复核人的节点可点「详情」展开复核人员信息 */
+    var copy = nodeCopyHTML(sk, task, failed, st);
+    if (copy){
+      html += '<span class="nd-t">节点说明</span>' + copy;
+    }
     /* 节点专属字段：核心卡点字段置顶展示（异常节点优先展示原因类文案） */
     html += nodeFieldsHTML(sk, task, failed);
     /* 卡点归属 */
@@ -1538,28 +1765,40 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
     html += d.ifaces.map(function(it){ return ifaceRow(task, it, done, failed); }).join('');
     /* 复核类节点：审核人与结论 */
     if ((!done || failed) && (sk === 'signedWait' || sk === 'fileWait' || sk === 'recheck')){
-      var result = (sk === 'signedWait' && !failed) ? '' : '审核不通过';
-      /* 补件后复核：前次结论为不通过，本次复核进行中，避免误读为「本次已判不通过」 */
-      var verdict = (sk === 'recheck')
-        ? '<div>上次审核结论：审核不通过（已按原因补件）</div><div>本次复核：进行中，等待复核结论</div>'
-        : (result ? '<div>审核结论：' + result + '</div>' : '<div>审核结论：复核中，尚未给出结论</div>');
+      var verdict;
+      if (sk === 'signedWait'){
+        verdict = failed ? '<div>审核结论：审核不通过（终态，任务终止）</div>'
+                         : '<div>审核结论：复核中，尚未给出结论</div>';
+      } else if (sk === 'fileWait'){
+        /* 材料不全 ≠ 审核不通过：任务继续，补件后回到复核 */
+        verdict = '<div>上次审核结论：复核发现材料不全</div><div>本次状态：等待对方按缺件说明补件</div>';
+      } else {
+        verdict = '<div>上次审核结论：复核发现材料不全（已按缺件说明补件）</div><div>本次复核：进行中，等待复核结论</div>';
+      }
       html += '<span class="nd-t">复核信息</span>' +
         '<div class="nd-quote">' +
           '<div>审核人：' + AUDITOR.name + '（工号 ' + AUDITOR.no + ' · ' + AUDITOR.tel + '）</div>' +
           verdict +
-          (task.reason && (sk !== 'signedWait' || failed) ? '<div>不通过原因：' + task.reason + '</div>' : '') +
+          (task.reason && (sk !== 'signedWait' || failed)
+            ? '<div>' + (failed ? '驳回原因：' : (sk === 'signedWait' ? '' : '缺件说明：')) + task.reason + '</div>' : '') +
         '</div>';
     }
     /* 定位结论 */
     html += '<span class="nd-t">卡点定位结论</span>';
     html += '<div class="nd-quote' + ((done && !failed) ? '' : ' warn') + '">' +
             (done ? ('本节点已完成：' + (doneHintOf(d, task) || '接口均已推送成功') +
-                     (failed ? '，本节点无待办，后续由「待对方回传资料」节点跟进。' : '，无需处理。')) : d.locate) + '</div>';
+                     (failed ? '。审核不通过为终态，任务已终止，需按驳回原因整改后由对方重新发起申请。' : '，无需处理。'))
+                  : (pushFail
+                      ? '卡点在确认单推送链路（对方侧接收）：保司侧已生成确认单，但 486 推送未成功、对方未回执。需核对推送链路与客户手机号后重新推送，客户收到确认单即可正常签署。'
+                      : d.locate)) + '</div>';
     /* 下一步动作 */
     html += '<span class="nd-t">下一步动作</span>';
     html += '<div class="nd-quote">' +
-            (failed ? '本节点无待办；等待对方按不通过原因补传资料，补件回传后任务自动回到复核。'
-                    : (done ? '无需处理' : d.action)) + '</div>';
+            (failed ? '本节点无待办；审核不通过为终态，按驳回原因整改后由对方重新发起保全变更申请。'
+                    : (done ? '无需处理'
+                            : (pushFail
+                                ? '联系芯银保核对确认单（486）推送链路与客户手机号 → 排查后重新推送 → 客户收到确认单即可正常签署并回传。'
+                                : d.action))) + '</div>';
     /* 对接人 */
     if ((!done || failed) && who){
       html += '<span class="nd-t">对接人</span>' +
@@ -1819,7 +2058,7 @@ body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:cent
       });
     });
   }
-  var RECENT = ['SH20250920001866','SH20250920001867','SH20250916000442','SH20250912000918','SH20250908000731','SH20250905000319','SH20250928000104','SH20250815000220'];
+  var RECENT = ['SH20250920001866','SH20250920001867','SH20250918000612','SH20250916000442','SH20250901000256','SH20250912000918','SH20250908000731','SH20250905000319','SH20250928000104','SH20250815000220'];
   /* 查询记录以「受理单号」为维度：同一受理单号挂多张保单 → 合并成一条记录（保单号列出多张） */
   var RECENT_RECS = (function(){
     var order = [], map = {};
