@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>招行云信托保全 · 业务员流程查询（节点状态·接口定位版）</title>
+<style>
+:root{
+  --brand:#0052D9; --brand-light:#3B7DF8; --brand-bg:#E7ECFB;
+  --page:#F3F4F6; --card:#FFFFFF;
+  --t1:#1D2129; --t2:#4E5969; --t3:#86909C; --t4:#A6A6A6;
+  --line:#F0F0F0; --line-2:#E7EBF0; --border:#DDDDDD; --dot-off:#C9CDD4;
+  --success:#2BA471; --success-bg:#E8F5EE;
+  --warn:#E37318; --warn-bg:#FDF3E6;
+  --danger:#D54941; --danger-bg:#FDECEE; --danger-line:#F7C9C6;
+  --input:#F3F4F6;
+  --font-cn:"Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --font-num:"Inter","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{background:#E5E6EB;font-family:var(--font-cn);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#viewport{position:relative;width:375px;height:812px;transform-origin:center center;}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--page);box-shadow:0 24px 60px rgba(15,23,42,.22);}
+
+.screen{
+  position:absolute;top:0;left:0;width:375px;height:812px;
+  display:flex;flex-direction:column;background:var(--page);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateX(24px);
+  transition:opacity .28s ease,transform .28s ease,visibility .28s;
+}
+.screen.active{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(0);}
+.screen.leaving{transform:translateX(-24px);}
+
+.statusbar{height:62px;flex:0 0 62px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;}
+.statusbar .time{font-family:var(--font-num);font-size:15px;font-weight:600;color:var(--t1);}
+.navbar{height:44px;flex:0 0 44px;padding:0 8px;display:flex;align-items:center;gap:4px;background:#fff;}
+.nav-back{width:24px;height:24px;flex:0 0 24px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;}
+.nav-title{flex:1;text-align:center;font-size:17px;font-weight:600;color:var(--t1);}
+.nav-spacer{width:24px;height:24px;flex:0 0 24px;}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.scroll::-webkit-scrollbar{width:0;height:0;}
+.card{background:var(--card);border-radius:12px;padding:16px;}
+.sec-title{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sec-title .t{font-size:14px;font-weight:600;color:var(--t1);}
+.sec-title .c{font-size:11px;color:var(--t4);}
+.divider{height:1px;background:var(--line);}
+.hint{font-size:11px;color:var(--t4);line-height:16px;}
+.tag{height:22px;border-radius:4px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;white-space:nowrap;flex:0 0 auto;background:var(--brand-bg);color:var(--brand);}
+.tag.warn,.tag.brand,.tag.ok,.tag.gray{background:var(--brand-bg);color:var(--brand);}
+.tag.danger{background:#FEECEC;color:var(--danger);}
+.tag.pend{background:var(--input);color:var(--t3);}
+
+/* ---------- S1 ---------- */
+.qcard{background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.qrow{display:flex;align-items:center;gap:10px;}
+.qinput{flex:1;height:44px;border-radius:22px;background:#F5F6F7;display:flex;align-items:center;gap:8px;padding:0 16px;min-width:0;}
+.qinput svg{flex:0 0 16px;opacity:.45;}
+.qinput input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:14px;color:var(--t1);width:100%;min-width:0;}
+.qinput input::placeholder{color:var(--t4);}
+.form-card{display:flex;flex-direction:column;gap:14px;}
+.form-title{font-size:14px;font-weight:600;color:var(--t1);}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:4px;}
+.field-label em{font-style:normal;font-size:11px;color:var(--t4);}
+.field-label .req{color:var(--danger);}
+.input{height:40px;border-radius:8px;background:var(--input);display:flex;align-items:center;padding:0 12px;}
+.input.primary{background:#fff;border:1px solid var(--brand);}
+.input input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:13px;color:var(--t1);width:100%;}
+.input input::placeholder{color:var(--t4);}
+.input input.num{font-family:var(--font-num);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{height:30px;border-radius:15px;padding:0 14px;background:var(--input);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:400;color:var(--t2);border:none;cursor:pointer;transition:background .18s,color .18s;font-family:var(--font-cn);white-space:nowrap;}
+.chip.on{background:var(--brand);color:#fff;font-weight:500;}
+.recent{display:flex;flex-direction:column;gap:12px;}
+.fbtn{height:40px;flex:0 0 auto;padding:0 14px;border-radius:20px;background:#fff;border:1px solid var(--brand);color:var(--brand);font-size:14px;font-weight:500;display:flex;align-items:center;gap:4px;font-family:var(--font-cn);cursor:pointer;transition:background .18s;}
+.fbtn:active{background:var(--brand-bg);}
+.fbtn.on{background:var(--brand-bg);}
+.fpanel{background:#fff;border-radius:14px;padding:14px;display:none;flex-direction:column;gap:12px;}
+.fpanel.open{display:flex;}
+.fpanel .fp-title{display:flex;align-items:center;justify-content:space-between;}
+.fpanel .fp-title .t{font-size:13px;font-weight:600;color:var(--t1);}
+.fpanel .fp-title .clr{font-size:12px;color:var(--brand);background:none;border:none;cursor:pointer;font-family:var(--font-cn);padding:0;}
+.frow{display:flex;align-items:center;gap:8px;}
+.frow .fk{font-size:12px;color:var(--t3);flex:0 0 56px;}
+.frow input,.frow select{flex:1;min-width:0;height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--border);outline:none;background:var(--input);font-size:12px;color:var(--t1);font-family:var(--font-cn);-webkit-appearance:none;appearance:none;}
+.frow .wave{font-size:12px;color:var(--t4);flex:0 0 auto;}
+.fempty{padding:24px 0;text-align:center;font-size:12px;color:var(--t4);}
+.rcard{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:box-shadow .18s;}
+.rcard:active{box-shadow:0 2px 10px rgba(29,33,41,.08);}
+.rcard .top{display:flex;align-items:center;gap:8px;justify-content:space-between;}
+.rcard .top .no{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rcard .top .tag{flex:0 0 auto;}
+.rcard .no{font-family:var(--font-num);font-size:14px;font-weight:600;color:var(--t1);}
+.rcard .idwrap{display:flex;flex-direction:column;gap:4px;}
+.rcard .sub{font-size:13px;font-weight:500;color:var(--t3);line-height:18px;}
+.rcard .kv{display:flex;flex-wrap:wrap;row-gap:8px;}
+.rcard .kv .cell{width:50%;display:flex;gap:6px;font-size:12px;min-width:0;}
+.rcard .kv .cell.full{width:100%;}
+.rcard .kv .k{color:var(--t4);flex:0 0 auto;}
+.rcard .kv .v{color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;}
+.rcard .kv .cell.full .v{white-space:normal;word-break:break-all;line-height:17px;}
+.entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;border-radius:12px;background:var(--brand-bg);cursor:pointer;}
+.entry .l{display:flex;flex-direction:column;gap:3px;}
+.entry .t{font-size:13px;font-weight:600;color:var(--brand);}
+.entry .s{font-size:11px;color:var(--brand);opacity:.75;}
+.entry .arrow{font-size:16px;color:var(--brand);}
+.actionbar{flex:0 0 auto;padding:12px;display:flex;align-items:center;gap:12px;background:#fff;border-top:1px solid var(--border);}
+.btn{height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--font-cn);font-size:15px;border:none;cursor:pointer;transition:opacity .18s;}
+.btn:active{opacity:.82;}
+.btn-reset{width:103px;flex:0 0 103px;background:#fff;border:1px solid var(--border);color:var(--t2);font-weight:500;}
+.btn-primary{flex:1;background:var(--brand);color:#fff;font-weight:600;}
+.btn-outline{flex:1;background:#fff;border:1px solid var(--brand);color:var(--brand);font-weight:500;}
+.btn-fixed{width:120px;flex:0 0 120px;background:var(--brand);color:#fff;font-weight:600;}
+
+/* ---------- S2 ---------- */
+.ov-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ov-no{font-family:var(--font-num);font-size:16px;font-weight:600;color:var(--t1);}
+.ov-no.multi,.v.multi{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.ov-no.multi .pn{font-size:14px;font-weight:500;line-height:20px;}
+.v.multi .pn{font-family:var(--font-num);line-height:18px;}
+.tasklist{display:flex;flex-direction:column;gap:8px;}
+.fltbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:10px;background:var(--brand-bg);}
+.fltbar .t{font-size:11px;color:var(--brand);line-height:16px;}
+.fltbar .lk{font-size:11px;color:var(--brand);text-decoration:underline;cursor:pointer;flex:0 0 auto;}
+.tcard{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--input);border:1px solid transparent;cursor:pointer;transition:background .18s,border-color .18s;}
+.tcard:active{background:var(--brand-bg);border-color:var(--brand);}
+.tcard .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tcard .n{font-size:13px;font-weight:600;color:var(--t1);}
+.tcard .m{font-family:var(--font-num);font-size:11px;color:var(--t4);}
+.tcard .arw{font-size:18px;color:var(--t4);flex:0 0 auto;}
+.timeline{display:flex;flex-direction:column;gap:2px;}
+.tl-node{display:flex;gap:12px;}
+.tl-col{width:14px;flex:0 0 14px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.tl-dot{width:14px;height:14px;border-radius:50%;flex:0 0 14px;}
+.tl-dot.done{background:var(--success);}
+.tl-dot.current{background:var(--success);}
+.tl-dot.fail{background:var(--danger);}
+.tl-dot.cancel{background:var(--t4);}
+.tl-dot.todo{background:#fff;border:2px solid var(--dot-off);}
+.tl-line{width:2px;height:30px;flex:0 0 30px;background:var(--success);}
+.tl-line.off{background:var(--line-2);}
+.tl-right{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:12px;}
+.tl-right .t{font-size:13px;font-weight:600;color:var(--t1);}
+.tl-right .t.cur{color:var(--brand);}
+.tl-right .t.fail{color:var(--danger);}
+.tl-right .t.cancel{color:var(--t3);}
+.tl-right .t.todo{color:var(--t2);}
+.tl-right .d{font-size:11px;color:var(--t4);line-height:16px;}
+.tl-right .d.cur{color:var(--success);opacity:.75;}
+.rule{display:flex;flex-direction:column;gap:8px;}
+.rule .body{font-size:11px;color:var(--t2);line-height:19px;white-space:pre-line;}
+
+/* ---------- 联系人 ---------- */
+.contact{display:flex;flex-direction:column;gap:12px;}
+.ct-row{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;flex:0 0 36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;}
+.avatar.a1{background:var(--brand-bg);color:var(--brand);}
+.avatar.a2{background:var(--success-bg);color:var(--success);}
+.avatar.a3{background:var(--warn-bg);color:var(--warn);}
+.avatar.a4{background:var(--input);color:var(--t2);}
+.ct-row .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ct-row .n{font-size:13px;font-weight:500;color:var(--t1);}
+.ct-row .o{font-size:11px;color:var(--t4);}
+.tel{height:28px;border-radius:14px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-num);font-size:11px;font-weight:500;text-decoration:none;flex:0 0 auto;}
+.tel.t1{background:var(--brand-bg);color:var(--brand);}
+.tel.t2{background:var(--success-bg);color:var(--success);}
+.tel.t3{background:var(--warn-bg);color:var(--warn);}
+.tel.t4{background:var(--input);color:var(--t2);}
+
+/* ---------- S3 保单字段 ---------- */
+
+.agroup{display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--input);border-radius:12px;}
+.agroup + .agroup{margin-top:14px;}
+.agroup-head{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:10px;
+  background:#fff;border:1px dashed rgba(0,82,217,.4);}
+.agroup-head .no{font-size:12px;font-weight:600;color:var(--brand);font-family:var(--mono);}
+.agroup-head .l{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;width:100%;}
+.agroup-head .pol{display:flex;align-items:flex-start;gap:6px;min-width:0;}
+.agroup-head .pol .pk{font-size:12px;color:var(--t3);line-height:18px;flex:0 0 auto;}
+.agroup-head .pol .pv{display:flex;flex-direction:column;min-width:0;}
+.agroup-head .pol .pv .pn{font-size:12px;font-weight:500;color:var(--t1);font-family:var(--mono);line-height:18px;word-break:break-all;}
+/* 一张保单一行：保单号 + 该保单的代销渠道（不同保单渠道可不同） */
+.agroup-head .pol .pv .prow{display:flex;align-items:baseline;gap:8px;min-width:0;}
+.agroup-head .pol .pv .prow .ch{font-size:11px;color:var(--t3);line-height:18px;flex:0 0 auto;}
+.agroup-head .pol .pv .tr{font-size:12px;color:var(--t1);line-height:18px;}
+.tasklist .tcard{margin:0;}
+.agroup .tcard{background:#fff;border-color:var(--line-2);}
+.agroup .tcard:active{background:var(--brand-bg);border-color:var(--brand);}
+
+/* ---------- S2 子任务节点折叠（就地展开，不跳页） ---------- */
+.tcardwrap{display:flex;flex-direction:column;}
+.tcard .arw{transition:transform .2s ease;}
+.tcard.open{border-color:var(--brand);background:var(--brand-bg);}
+.tcard.open .arw{transform:rotate(90deg);color:var(--brand);}
+.tpanel{display:none;margin-top:6px;padding:12px 12px 4px;border-radius:10px;background:#fff;border:1px solid var(--line-2);}
+.tpanel.open{display:block;animation:tpanelin .2s ease;}
+@keyframes tpanelin{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.tpanel .tl-right{padding-bottom:10px;}
+.tpanel .tl-right .t{font-size:12.5px;}
+.tpanel .tl-right .d{font-size:10.5px;}
+.tpanel .tl-line{height:22px;flex:0 0 22px;}
+.tpanel .tl-hint{font-size:10.5px;line-height:15px;}
+.tpanel .tl-detail{height:20px;padding:0 8px;font-size:11px;}
+.tpanel .pend-note{font-size:11px;line-height:16px;color:var(--t3);margin-bottom:8px;}
+/* ---------- S3 ---------- */
+.info-card{display:flex;flex-direction:column;gap:12px;}
+.kv{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.kv .k{font-size:13px;color:var(--t3);flex:0 0 auto;}
+.kv .v{font-size:13px;font-weight:500;color:var(--t1);text-align:right;}
+.kv .v.mute{color:var(--t4);font-weight:400;}
+
+/* ---------- S4 卡点诊断 ---------- */
+.block-card{border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;
+  background:var(--danger-bg);border:1px solid var(--danger);}
+.block-card.w{background:var(--warn-bg);border-color:var(--warn);}
+.block-card.b{background:var(--brand-bg);border-color:var(--brand);}
+.block-card.g{background:var(--success-bg);border-color:var(--success);}
+.block-card.n{background:var(--input);border-color:var(--border);}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.block-title{font-size:18px;font-weight:600;color:var(--danger);}
+.block-card.w .block-title{color:var(--warn);}
+.block-card.b .block-title{color:var(--brand);}
+.block-card.g .block-title{color:var(--success);}
+.block-card.n .block-title{color:var(--t2);}
+.pbar{height:6px;border-radius:3px;background:rgba(0,0,0,.08);overflow:hidden;}
+.pbar i{display:block;height:6px;border-radius:3px;background:var(--danger);}
+.block-card.w .pbar i{background:var(--warn);}
+.mt-list{display:flex;flex-direction:column;gap:10px;}
+.mt-item{display:flex;align-items:flex-start;gap:8px;}
+.mt-box{width:14px;height:14px;flex:0 0 14px;border-radius:3px;margin-top:2px;border:1.5px solid var(--danger);background:#fff;}
+.block-card.w .mt-box{border-color:var(--warn);}
+.mt-box.done{background:var(--success);border-color:var(--success);}
+.mt-text{font-size:12px;line-height:17px;color:var(--danger);flex:1;}
+.block-card.w .mt-text{color:var(--warn);}
+.block-card.b .mt-text{color:var(--brand);}
+.block-card.n .mt-text{color:var(--t2);}
+.block-card.g .mt-text{color:var(--success);}
+.block-card.b .mt-box{border-color:var(--brand);}
+.block-card.n .mt-box{border-color:var(--t3);}
+.block-card.g .mt-box{border-color:var(--success);}
+.mt-text.done{color:var(--t3);}
+.guide{display:flex;flex-direction:column;gap:12px;}
+.g-step{display:flex;gap:10px;}
+.g-num{width:20px;height:20px;flex:0 0 20px;border-radius:10px;background:var(--brand);color:#fff;font-family:var(--font-num);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+.g-num.warn{background:var(--danger);}
+.g-text{font-size:12px;line-height:19px;color:var(--t2);flex:1;}
+.g-text.warn{color:var(--danger);}
+.rec{display:flex;flex-direction:column;gap:12px;}
+.rec-item{display:flex;gap:10px;}
+.rec-col{width:10px;flex:0 0 10px;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:4px;}
+.rec-dot{width:10px;height:10px;flex:0 0 10px;border-radius:5px;}
+.rec-line{width:2px;flex:1;min-height:26px;background:var(--line-2);}
+.rec-right{flex:1;display:flex;flex-direction:column;gap:3px;}
+.rec-right .t{font-size:12px;font-weight:500;color:var(--t1);}
+.rec-right .m{font-size:11px;color:var(--t4);line-height:16px;}
+.rec-right .f{font-size:11px;color:var(--success);line-height:16px;}
+
+/* ---------- S5 状态字典 ---------- */
+.searchbar{flex:0 0 auto;padding:12px;background:#fff;}
+.searchbox{height:36px;border-radius:18px;background:var(--input);display:flex;align-items:center;gap:8px;padding:0 14px;}
+.searchbox input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-cn);font-size:13px;color:var(--t1);}
+.searchbox input::placeholder{color:var(--t4);}
+.chipbar{flex:0 0 auto;display:flex;gap:8px;padding:0 16px 12px;background:#fff;overflow-x:auto;}
+.chipbar::-webkit-scrollbar{height:0;}
+.chipbar .chip{height:28px;border-radius:14px;padding:0 12px;font-size:12px;}
+.kb-list{display:flex;flex-direction:column;gap:10px;}
+.kb-item{background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;cursor:pointer;border:1px solid transparent;transition:border-color .18s;}
+.kb-item.open{border-color:var(--brand);}
+.kb-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.kb-head .l{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0;}
+.kb-head .t{font-size:13px;font-weight:600;color:var(--t1);}
+.kb-head .n{font-size:11px;color:var(--t4);}
+.kb-body{display:none;flex-direction:column;gap:8px;}
+.kb-item.open .kb-body{display:flex;}
+.kb-quote{background:#F7F8FA;border-radius:6px;padding:10px;font-size:11px;line-height:18px;color:var(--t2);}
+.kb-line{display:flex;gap:6px;align-items:flex-start;}
+.kb-line .k{font-size:11px;color:var(--t4);flex:0 0 auto;}
+.kb-line .v{font-size:11px;line-height:18px;color:var(--t2);flex:1;}
+.kb-line .v strong{font-weight:500;color:var(--t1);}
+.kb-foot{background:var(--brand-bg);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:4px;}
+.kb-foot .t{font-size:12px;font-weight:600;color:var(--brand);}
+.kb-foot .b{font-size:11px;line-height:17px;color:var(--brand);opacity:.8;}
+
+/* ---------- Toast ---------- */
+.toast{position:absolute;left:50%;bottom:96px;transform:translate(-50%,8px);background:rgba(0,0,0,.78);color:#fff;font-size:13px;line-height:18px;padding:10px 16px;border-radius:8px;max-width:300px;text-align:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility .2s;z-index:30;}
+.tl-detail{margin-top:2px;align-self:flex-start;height:22px;padding:0 10px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;line-height:20px;font-family:var(--font-cn);cursor:pointer;}
+.rvmodal{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:0 24px;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:40;}
+.rvmodal.show{opacity:1;visibility:visible;}
+.rvcard{width:100%;background:#fff;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 12px 32px rgba(15,23,42,.24);}
+.rvhead{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:600;color:var(--t1);}
+.rvclose{border:none;background:none;font-size:14px;color:var(--t3);cursor:pointer;padding:0;line-height:1;}
+.rv-reason{display:flex;flex-direction:column;gap:4px;}
+.rv-reason .k{font-size:12px;color:var(--t3);}
+.rv-reason .v{font-size:13px;color:var(--t1);line-height:20px;background:#FFF7E8;border-radius:6px;padding:8px 10px;}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0);}
+
+/* ---------- 节点详情 · 卡点定位 ---------- */
+.tl-hint{margin-top:2px;font-size:11px;line-height:16px;color:var(--t2);}
+.tl-hint.ok{color:var(--success);}
+.tl-hint.wait{color:var(--warn);}
+.tl-hint.fail{color:var(--danger);}
+.ndmodal{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:40;}
+.ndmodal.show{opacity:1;visibility:visible;}
+.ndcard{width:100%;max-height:690px;background:#fff;border-radius:14px 14px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 32px rgba(15,23,42,.24);}
+.ndhead{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ndhead .t{font-size:15px;font-weight:600;color:var(--t1);}
+.ndclose{border:none;background:none;font-size:14px;color:var(--t3);cursor:pointer;padding:0;line-height:1;}
+.ndbody{overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.ndbody > *{flex:0 0 auto;}   /* 防止长内容时字段列表被 flex 压扁 */
+.ndbody::-webkit-scrollbar{width:0;}
+.nd-side{border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--border);background:var(--input);}
+.nd-side.bank{background:var(--warn-bg);border-color:var(--warn);}
+.nd-side.cust{background:var(--warn-bg);border-color:var(--warn);}
+.nd-side.ins{background:var(--brand-bg);border-color:var(--brand);}
+.nd-side.none{background:var(--success-bg);border-color:var(--success);}
+.nd-side .h{display:flex;align-items:center;gap:6px;}
+.nd-badge{height:22px;border-radius:4px;padding:0 8px;display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:#fff;background:var(--t2);}
+.nd-side.bank .nd-badge,.nd-side.cust .nd-badge{background:var(--warn);}
+.nd-side.ins .nd-badge{background:var(--brand);}
+.nd-side.none .nd-badge{background:var(--success);}
+.nd-side .d{font-size:12px;line-height:18px;color:var(--t2);}
+.nd-side.bank .d,.nd-side.cust .d{color:#8A4B0E;}
+.nd-side.ins .d{color:var(--brand);}
+.nd-side.none .d{color:var(--success);}
+.nd-t{font-size:12px;font-weight:600;color:var(--t3);}
+.nd-iface{border:1px solid var(--line-2);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;}
+.nd-iface .r1{display:flex;align-items:center;gap:6px;}
+.nd-code{font-family:var(--font-num);font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-bg);border-radius:4px;padding:2px 6px;flex:0 0 auto;}
+.nd-iface .nm{flex:1;font-size:12px;font-weight:500;color:var(--t1);min-width:0;}
+.nd-st{font-size:11px;font-weight:500;flex:0 0 auto;}
+.nd-st.ok{color:var(--success);}
+.nd-st.run{color:var(--brand);}
+.nd-st.wait{color:var(--warn);}
+.nd-st.fail{color:var(--danger);}
+.nd-st.pend{color:var(--t4);}
+.nd-meta{font-size:11px;line-height:16px;color:var(--t4);}
+.nd-quote{background:#F7F8FA;border-radius:6px;padding:10px;font-size:12px;line-height:19px;color:var(--t2);}
+.nd-quote.warn{background:#FFF7E8;color:#8A4B0E;}
+
+/* ---------- 一键报障（详情页浮窗） ---------- */
+.fab{position:absolute;right:16px;bottom:24px;height:44px;border-radius:22px;padding:0 16px 0 13px;
+  display:flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:var(--font-cn);font-size:13px;font-weight:600;letter-spacing:.2px;z-index:20;
+  box-shadow:0 6px 18px rgba(0,82,217,.34);}
+.fab:active{opacity:.86;}
+.fab svg{flex:0 0 16px;}
+.fbmodal{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;z-index:45;}
+.fbmodal.show{opacity:1;visibility:visible;}
+.fbsheet{width:100%;max-height:660px;background:#fff;border-radius:14px 14px 0 0;padding:16px;
+  display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 32px rgba(15,23,42,.24);}
+.fbhead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;}
+.fbhead .t{font-size:15px;font-weight:600;color:var(--t1);}
+.fbclose{border:none;background:none;font-size:14px;color:var(--t3);cursor:pointer;padding:0;line-height:1;}
+.fbbody{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.fbbody::-webkit-scrollbar{width:0;}
+.fb-ctx{background:var(--input);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.fb-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.fb-row .k{font-size:12px;color:var(--t3);flex:0 0 60px;}
+.fb-row .v{flex:1;text-align:right;font-size:12px;font-weight:500;color:var(--t1);
+  font-family:var(--font-num);word-break:break-all;}
+.fb-fld{display:flex;flex-direction:column;gap:8px;}
+.fb-lb{font-size:12px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:4px;}
+.fb-lb em{font-style:normal;font-size:11px;font-weight:400;color:var(--t4);}
+.fb-ta{width:100%;min-height:66px;border:1px solid var(--line-2);border-radius:8px;padding:10px;
+  font-family:var(--font-cn);font-size:12.5px;line-height:19px;color:var(--t1);resize:none;outline:none;background:#fff;}
+.fb-ta:focus{border-color:var(--brand);}
+.fb-ip{width:100%;height:40px;border:1px solid var(--line-2);border-radius:8px;padding:0 10px;
+  font-family:var(--font-num);font-size:13px;color:var(--t1);outline:none;background:#fff;}
+.fb-ip:focus{border-color:var(--brand);}
+.fb-up{width:100%;height:40px;border:1px dashed var(--border);border-radius:8px;background:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;
+  font-family:var(--font-cn);font-size:12.5px;color:var(--t3);}
+.fb-up.done{border-style:solid;border-color:var(--success);color:var(--success);background:var(--success-bg);}
+.fbfoot{flex:0 0 auto;display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:12px;}
+.fbfoot .btn-outline{flex:0 0 92px;}
+/* 节点状态说明（业务确认版文案）：含复核人的节点可点「详情」展开复核人员信息 */
+.nd-copy{background:#F7F8FA;border-left:3px solid var(--success);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.nd-copy .tx{font-size:12px;line-height:19px;color:var(--success);}
+.nd-copy-more{align-self:flex-start;height:22px;padding:0 10px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;font-weight:500;}
+.nd-act{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:8px;background:var(--input);}
+.nd-act .l{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
+.nd-act .n{font-size:12px;font-weight:500;color:var(--t1);}
+.nd-act .o{font-size:11px;color:var(--t4);}
+/* ---------- 节点专属字段：核心卡点字段置顶 ---------- */
+.nd-core{border:1px solid var(--warn);background:var(--warn-bg);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.nd-core .hd{display:flex;align-items:center;gap:6px;}
+.nd-core .badge{height:18px;padding:0 6px;border-radius:3px;background:var(--warn);color:#fff;font-size:10.5px;font-weight:600;display:inline-flex;align-items:center;flex:0 0 auto;}
+.nd-core .tx{font-size:11px;color:#8A4B0E;}
+.nd-core .nd-row .k{color:#8A4B0E;}
+.nd-core .nd-row .v{color:#8A4B0E;font-weight:500;}
+.nd-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:18px;}
+.nd-row .k{flex:0 0 84px;color:var(--t3);}
+.nd-row .v{flex:1;min-width:0;color:var(--t1);word-break:break-word;}
+.nd-flds{display:flex;flex-direction:column;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;}
+.nd-flds .nd-row{padding:8px 10px;}
+.nd-flds .nd-row + .nd-row{border-top:1px solid var(--line-2);}
+.nd-ent{flex:0 0 auto;height:22px;padding:0 8px;border:1px solid var(--brand);border-radius:4px;background:#fff;color:var(--brand);font-size:11px;line-height:20px;font-family:var(--font-cn);cursor:pointer;}
+.nd-ent.up{border-color:var(--warn);color:#8A4B0E;}
+/* 审核详情（审核类节点专用弹层） */
+.aud-kv{display:flex;flex-direction:column;}
+.aud-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:9px 0;font-size:13.5px;line-height:19px;}
+.aud-row .k{flex:0 0 auto;color:var(--t3);}
+.aud-row .v{flex:1;min-width:0;text-align:right;color:var(--t1);word-break:break-word;}
+.aud-lb{font-size:13px;line-height:18px;color:var(--t3);margin-top:6px;}
+.aud-box{background:var(--warn-bg);border-radius:8px;padding:11px 12px;font-size:13px;line-height:20px;color:#8A4B0E;}
+
+/* ---------- v5：时间轴节点内联接口链 ---------- */
+.tl-chain{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.tl-chain .if{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 6px;border-radius:3px;
+  font-size:10px;line-height:18px;font-family:var(--font-num);white-space:nowrap;background:#F7F8FA;color:var(--t2);border:1px solid var(--line-2);}
+.tl-chain .if i{width:5px;height:5px;border-radius:50%;flex:0 0 5px;font-style:normal;}
+.tl-chain .if.ok{color:var(--success);background:var(--success-bg);border-color:rgba(43,164,113,.35);}
+.tl-chain .if.ok i{background:var(--success);}
+.tl-chain .if.fail{color:var(--danger);background:var(--danger-bg);border-color:var(--danger-line);}
+.tl-chain .if.fail i{background:var(--danger);}
+.tl-chain .if.wait,.tl-chain .if.run{color:#8A4B0E;background:var(--warn-bg);border-color:rgba(227,115,24,.35);}
+.tl-chain .if.wait i,.tl-chain .if.run i{background:var(--warn);}
+.tl-chain .if.pend{color:var(--t4);}
+.tl-chain .if.pend i{background:var(--dot-off);}
+/* v5：弹层接口返回码行 */
+.nd-rc{font-family:var(--font-num);font-size:10.5px;line-height:15px;border-radius:4px;padding:3px 8px;background:#F7F8FA;color:var(--t2);word-break:break-all;}
+.nd-rc.ok{color:var(--success);background:var(--success-bg);}
+.nd-rc.fail{color:var(--danger);background:var(--danger-bg);}
+.nd-rc.wait{color:#8A4B0E;background:var(--warn-bg);}
+</style>
+</head>
+<body>
+
+<div id="viewport">
+<div id="stage">
+
+<!-- ============ S1 保单查询页 ============ -->
+<section class="screen active" id="s1">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar"><div class="nav-spacer"></div><div class="nav-title">招行信托保全查询</div><div class="nav-spacer"></div></div>
+
+  <div class="scroll">
+    <div class="qcard">
+      <div class="qrow">
+        <div class="qinput">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="#86909C" stroke-width="1.4"/><path d="M11 11L14 14" stroke="#86909C" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input id="fKey" type="text" placeholder="请输入受理单号 / 保单号" autocomplete="off">
+        </div>
+        <button class="fbtn" id="btnFilter">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1.5 2.5h11L8.6 7.6v3.2L5.4 12.4V7.6L1.5 2.5z" stroke="#0052D9" stroke-width="1.3" stroke-linejoin="round"/></svg>筛选
+        </button>
+      </div>
+    </div>
+
+    <div class="fpanel" id="fPanel">
+      <div class="fp-title"><span class="t">筛选条件</span><button class="clr" id="btnFClear">重置</button></div>
+      <div class="frow">
+        <span class="fk">申请日期</span>
+        <input type="date" id="fDateStart">
+        <span class="wave">至</span>
+        <input type="date" id="fDateEnd">
+      </div>
+      <div class="frow">
+        <span class="fk">保全状态</span>
+        <select id="fStatus"><option value="all">全部状态</option></select>
+      </div>
+      <div class="frow">
+        <span class="fk">业务类型</span>
+        <select id="fBiz"><option value="all">全部类型</option></select>
+      </div>
+    </div>
+
+    <div class="card recent" id="idResults" style="display:none;"></div>
+
+    <div class="card recent">
+      <div id="recentList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S2 保单任务列表 ============ -->
+<section class="screen" id="s2">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s1"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">保单任务流程</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="sec-title"><span class="t">保单保全任务</span></div>
+      <div class="fltbar" id="fltBar" style="display:none;"></div>
+      <div class="tasklist" id="taskList"></div>
+    </div>
+  </div>
+
+  <!-- 一键报障浮标：报障信息自动带出当前受理单号 / 子任务号 / 节点 -->
+  <button class="fab" id="fabHelp">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3.4 4 7.1v5.2c0 4.2 3.3 7.6 8 9.3 4.7-1.7 8-5.1 8-9.3V7.1L12 3.4Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8.6v3.9" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.6" r="1" fill="#fff"/></svg>
+    一键报障
+  </button>
+</section>
+
+<!-- ============ S3 任务详情 ============ -->
+<section class="screen" id="s3">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s2"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">任务详情</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <!-- 保全任务节点（置顶展示） -->
+    <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="sec-title"><span class="t">保全任务节点</span></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <!-- 保全信息 -->
+    <div class="card info-card">
+      <div class="sec-title"><span class="t">保单信息</span></div>
+      <div class="ov-head"><span class="k" style="font-size:13px;color:var(--t3);flex:0 0 auto;">子任务号</span><span class="ov-no" id="dtNo">—</span></div>
+      <div class="kv"><span class="k">受理单号</span><span class="v" id="dtAccept">—</span></div>
+      <div class="kv"><span class="k">任务类型</span><span class="v" id="dtName">—</span></div>
+      <div class="kv"><span class="k">保单号</span><span class="v" id="dtPolicy">—</span></div>
+      <div class="kv"><span class="k">险种名称</span><span class="v" id="dtProduct">—</span></div>
+      <div class="kv"><span class="k">客户姓名</span><span class="v" id="dtHolder">—</span></div>
+      <div class="kv"><span class="k">客户证件号</span><span class="v" id="dtIdNo">—</span></div>
+      <div class="kv" id="dtExtraRow" style="display:none;"><span class="k" id="dtExtraK">—</span><span class="v" id="dtExtraV">—</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S4========= S4 处理指引 / 卡点诊断 ============ -->
+<section class="screen" id="s4">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" data-back="s3"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">处理指引</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="scroll">
+    <div class="block-card" id="bkCard">
+      <div class="block-head">
+        <span class="tag danger" id="bkTag">—</span>
+        <span class="hint" id="bkNode" style="color:var(--danger);">—</span>
+      </div>
+      <span class="block-title" id="bkTitle">—</span>
+      <span class="g-text" id="bkDesc">—</span>
+      <div id="bkBarWrap" style="display:none;flex-direction:column;gap:6px;">
+        <span class="hint" id="bkDaysText" style="color:var(--danger);">—</span>
+        <div class="pbar"><i id="bkBar" style="width:0%"></i></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-title" style="margin-bottom:10px;"><span class="t">待办清单</span><span class="c" id="mtCount" style="color:var(--warn);">—</span></div>
+      <div class="mt-list" id="mtList"></div>
+    </div>
+
+    <div class="card guide">
+      <span class="form-title">业务员处理指引</span>
+      <div id="guideList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <div class="card rec">
+      <span class="form-title" style="margin-bottom:2px;">流转记录</span>
+      <div id="recList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <div class="card contact">
+      <div class="sec-title"><span class="t">处理人与联系方式</span><span class="c">按保单归属地分配</span></div>
+      <div class="ct-row">
+        <div class="avatar a1">张</div>
+        <div class="l"><span class="n">张敏 · 受理（个保全）</span><span class="o">工号 A10293 · 上海分公司营运中心</span></div>
+        <a class="tel t1" href="tel:02158768890">021-5876 8890</a>
+      </div>
+      <div class="divider"></div>
+      <div class="ct-row">
+        <div class="avatar a2">李</div>
+        <div class="l"><span class="n">李伟 · 复核（高级保全）</span><span class="o">工号 B20518 · 营运中心高级保全</span></div>
+        <a class="tel t2" href="tel:02158776621">021-5877 6621</a>
+      </div>
+      <div class="divider"></div>
+      <div class="ct-row">
+        <div class="avatar a3">王</div>
+        <div class="l"><span class="n">王芳 · 银保对接人</span><span class="o">芯银保保全 · 负责确认书与批单回传</span></div>
+        <a class="tel t3" href="tel:13800004021">138 **** 4021</a>
+      </div>
+    </div>
+
+    <div class="entry" data-goto="s5">
+      <div class="l"><span class="t">查看节点状态字典</span><span class="s">10 种状态的完整定义与责任方</span></div>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn" id="btnCopy" style="flex:1;background:#fff;border:1px solid var(--border);color:var(--t2);font-weight:500;">复制处理说明</button>
+    <a class="btn btn-fixed" href="tel:02158768890" style="width:140px;flex:0 0 140px;text-decoration:none;">联系处理人</a>
+  </div>
+</section>
+
+<!-- ============ S5 节点状态字典 ============ -->
+<section class="screen" id="s5">
+  <div class="statusbar"><span class="time">9:41</span>
+    <svg width="67" height="13" viewBox="0 0 67 13" fill="none"><rect x="0" y="8" width="3" height="5" rx="1" fill="#1D2129"/><rect x="5" y="5.5" width="3" height="7.5" rx="1" fill="#1D2129"/><rect x="10" y="3" width="3" height="10" rx="1" fill="#1D2129"/><rect x="15" y="0.5" width="3" height="12.5" rx="1" fill="#1D2129"/><path d="M23 4.2c3.2-3.9 8.1-3.9 11.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><path d="M25.6 7c1.8-2.2 4.5-2.2 6.3 0" stroke="#1D2129" stroke-width="1.5" stroke-linecap="round"/><rect x="39" y="1" width="24" height="11" rx="3" stroke="#1D2129" stroke-opacity="0.4" stroke-width="1"/><rect x="41" y="3" width="16" height="7" rx="1.5" fill="#1D2129"/></svg>
+  </div>
+  <div class="navbar">
+    <button class="nav-back" id="s5Back"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="#1D2129" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="nav-title">节点状态字典</div><div class="nav-spacer"></div>
+  </div>
+
+  <div class="searchbar"><div class="searchbox"><input id="kbSearch" type="search" placeholder="搜索状态或原因，如「审核失败」"></div></div>
+  <div class="chipbar" id="kbChips">
+    <button class="chip on" data-cat="all">全部</button>
+    <button class="chip" data-cat="fail">失败·终止类</button>
+    <button class="chip" data-cat="wait">待处理类</button>
+    <button class="chip" data-cat="run">进行中类</button>
+    <button class="chip" data-cat="done">成功类</button>
+  </div>
+
+  <div class="scroll"><div class="kb-list" id="kbList"></div>
+    <div class="kb-foot">
+      <span class="t">没找到对应状态？</span>
+      <span class="b">复制保单号 + 受理单号 + 状态截图，联系保单归属地营运中心；客服热线 95500</span>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<!-- 节点详情弹层：审核类节点展示「审核详情」，其余节点展示「节点详情 · 卡点定位」 -->
+<div class="ndmodal" id="ndMask">
+  <div class="ndcard" id="ndCard">
+    <div class="ndhead"><span class="t" id="ndTitle">节点详情 · 卡点定位</span><button class="ndclose" id="ndClose">✕</button></div>
+    <div class="ndbody" id="ndBody"></div>
+    <div class="actionbar" id="ndFoot" style="padding:0;background:none;border-top:none;">
+      <button class="btn" id="ndCopy" style="flex:1;background:#fff;border:1px solid var(--brand);color:var(--brand);font-weight:500;">复制定位话术</button>
+      <button class="btn btn-primary" id="ndOk" style="flex:0 0 96px;">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一键报障浮窗：详情页右下角浮标点开，上下文自动带出 -->
+<div class="fbmodal" id="fbMask">
+  <div class="fbsheet" id="fbSheet">
+    <div class="fbhead">
+      <span class="t">一键报障</span>
+      <button class="fbclose" id="fbClose">✕</button>
+    </div>
+    <div class="fbbody">
+      <div class="fb-ctx">
+        <div class="fb-row"><span class="k">受理单号</span><span class="v" id="fbAcc">—</span></div>
+        <div class="fb-row"><span class="k">子任务号</span><span class="v" id="fbTask">—</span></div>
+        <div class="fb-row"><span class="k">任务类型</span><span class="v" id="fbName">—</span></div>
+        <div class="fb-row"><span class="k">当前节点</span><span class="v" id="fbNode">—</span></div>
+        <div class="fb-row"><span class="k">信托公司</span><span class="v" id="fbTrust">—</span></div>
+        <div class="fb-row"><span class="k">代销渠道</span><span class="v" id="fbChan">—</span></div>
+      </div>
+
+      <div class="fb-fld">
+        <span class="fb-lb">问题类型</span>
+        <div class="chips" id="fbType">
+          <button class="chip on">流程卡住</button>
+          <button class="chip">状态不一致</button>
+          <button class="chip">数据错误</button>
+          <button class="chip">页面异常</button>
+        </div>
+      </div>
+
+      <div class="fb-fld">
+        <span class="fb-lb">问题描述</span>
+        <textarea class="fb-ta" id="fbDesc" rows="3"></textarea>
+      </div>
+
+      <div class="fb-fld">
+        <span class="fb-lb">现场截图 <em>选填</em></span>
+        <button class="fb-up" id="fbUp">＋ 上传当前页面截图</button>
+      </div>
+
+      <div class="fb-fld">
+        <span class="fb-lb">联系电话</span>
+        <input class="fb-ip" id="fbTel" value="138****8899" inputmode="tel">
+      </div>
+    </div>
+    <div class="fbfoot">
+      <button class="btn btn-outline" id="fbCancel">取消</button>
+      <button class="btn btn-primary" id="fbSubmit">提交报障</button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+  var DESIGN_W = 375, DESIGN_H = 812;
+  function fit(){
+    var s = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H, 1.2);
+    document.getElementById('viewport').style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  var toast = document.getElementById('toast'), tTimer;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(tTimer); tTimer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  }
+  /* 节点详情弹层关闭（弹层在下方「八之二」统一绑定） */
+
+  /* ==========================================================
+     一、9 种节点状态定义
+     mode: run 进行中 / fail 失败阻断 / done 完成 / cancel 撤销
+     node: 状态在主链路 / 分支中的位置（由 PATHS 推导时间轴）
+     ========================================================== */
+  var STATUS = {
+    init: {
+      n:'对方发起申请', tc:'brand', mode:'run', cat:'run', type:'进行中 · 刚发起',
+      mean:'对方已上送保全变更申请，系统正在生成受理单（21 开头）与批单任务（83 开头）。',
+      owner:'对方 · 芯银保保全',
+      next:'等待系统校验；校验通过下发对方确认单，校验不通过则流转「申请失败」。',
+      why:'—（正常流转，一般几分钟内完成）',
+      api:'apply / image',
+      todo:[['1','对方已发起申请，等待系统生成受理单'],['0','生成后自动下发对方确认单，无需额外操作']],
+      guide:[['1','此节点为流程起点，对方发起后系统自动处理'],['2','若长时间停留在该节点，确认对方是否上送成功、接口是否返回受理成功'],['!','校验不通过时任务流转「申请失败」，需整改后重新发起']]
+    },
+    applyFail: {
+      n:'申请失败', tc:'danger', mode:'fail', cat:'fail', type:'失败 · 已终止',
+      mean:'对方发起的保全变更申请校验未通过，任务终止，需整改后由对方重新发起申请。',
+      owner:'对方 · 芯银保保全',
+      next:'按失败原因整改后，由对方重新发起保全变更申请。',
+      why:'非招行渠道保单 · 客户信息校验不通过 · 反洗钱名单命中 · 影像缺失或信息不一致 · 保单信息校验不通过 · 被保人未满 8 周岁',
+      api:'apply',
+      todo:[['0','查看申请失败原因（接口返回 resultMsg）'],['0','按原因整改影像或客户信息'],['0','整改后由对方重新发起保全变更申请'],['1','申请失败为终态，原任务不可恢复']],
+      guide:[['1','在流程详情中查看申请失败的具体原因'],['2','渠道类问题：联系对方核对渠道与信托公司维护信息'],['3','客户信息类问题：引导客户在【太平洋寿险】官微维护五字段信息'],['!','申请失败不可补件续办，必须重新发起申请']]
+    },
+    /* 行方确认书打印：保司受理成功并下发待签署合同信息后，由行方下载并打印确认书，再交客户签署 */
+    printWait: {
+      n:'行方确认书打印', tc:'warn', mode:'run', cat:'wait', type:'待行方 · 打印确认书',
+      mean:'保司已受理成功并把待签署合同信息（含确认书影像 486）下发行方，等待行方下载并打印确认书，打印后交客户签署。',
+      owner:'行方 · 招行云信托',
+      next:'行方下载打印确认书后流转「待客户签字」；确认书下发失败则停留在行方侧排查推送链路。',
+      why:'行方尚未下载确认书文件 · 确认书下发未收到行方接收回执 · 行方打印后未交付客户签署',
+      api:'print',
+      todo:[['0','行方登录招行云信托下载待签署确认书'],['0','打印确认书并交客户签署'],['1','打印后流转「待客户签字」，等待客户签署回传']],
+      guide:[['1','保司侧接口已推送成功，此节点卡点在行方侧（下载 / 打印确认书）'],['2','联系行方客户经理下载确认书并打印，交客户签署'],['3','确认书下发失败（未收到行方回执）时，需排查推送链路后重新推送'],['!','确认书打印后客户签字超 180 天未回传，任务自动撤销']]
+    },
+    signWait: {
+      n:'待客户签字', tc:'warn', mode:'run', cat:'wait', type:'待客户 · 180 天',
+      mean:'对方确认单已推送，等待客户完成电子签署并回传；超 180 天未签署任务自动撤销。',
+      owner:'客户 · 对方客户经理',
+      next:'引导客户完成签署；超 180 天未回传，受理单下全部任务自动撤销并通知银保、对方。',
+      why:'客户未收到或未查看确认单 · 未成年人需监护人代签 · 1.5 需第二投保人签字 · 2.0 需新投保人信托公司签章',
+      api:'sign / cancel',
+      todo:[['0','客户完成对方确认单电子签署'],['0','未成年人由监护人代签'],['0','1.5 模式另需第二投保人签字'],['0','2.0 模式另需新投保人信托公司签章']],
+      guide:[['1','联系对方客户经理，确认客户是否已收到确认单'],['2','引导客户完成电子签署，未成年被保人需监护人签名'],['3','签署后自动流转「客户已签字待复核」，无需运维介入'],['!','超 180 天未回传，本受理单下任务自动撤销']]
+    },
+    canceled: {
+      n:'已撤销', tc:'gray', mode:'cancel', cat:'fail', type:'终止 · 已撤销',
+      mean:'客户签署回传前对方回退，或超 180 天未签署，任务自动撤销 / 取消。',
+      owner:'对方 / 系统自动',
+      next:'如需继续办理，由对方重新发起保全变更申请。',
+      why:'客户签字超 180 天未回传 · 对方回退保全申请 · 重复申请触发整单取消',
+      api:'cancel',
+      todo:[['0','确认撤销原因（超期 / 对方回退 / 重复申请）'],['0','如需继续办理，由对方重新发起申请'],['1','已通知银保，由银保通知对方']],
+      guide:[['1','在流转记录中确认撤销时间与触发方'],['2','超期撤销：重新申请后需重新走客户签署流程'],['3','对方回退：确认对方业务诉求后再决定是否重新发起'],['!','撤销为终态，原受理单不可恢复']]
+    },
+    signedWait: {
+      n:'客户已签字待复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 待复核',
+      mean:'客户签字单证与人脸识别影像已回传，任务已上送营运中心高级保全（按保单归属地）复核。',
+      owner:'营运中心高级保全',
+      next:'等待复核结论：复核通过生成电子批单；材料不全流转「待对方回传资料」；复核不通过则任务终止。',
+      why:'—（正常等待，可联系营运中心高级保全确认进度）',
+      api:'second',
+      todo:[['1','等待营运中心高级保全完成复核'],['1','复核资料：审核影像 + 已签署确认单 + 人脸识别影像'],['0','正常等待，无需额外操作']],
+      guide:[['1','复核重点核对服务受理单 PDF 中所有保全项的详细内容'],['2','2.0 投保人变更需核对确认单上是否有新投保人信托公司签章'],['3','复核发现材料不全时流转「待对方回传资料」，补件后回到复核'],['!','复核通过后系统自动生成电子批单（含信托委托人、信托受益人）']]
+    },
+    /* 复核发现材料不全：非终态。缺件说明回传对方，补齐后流转「对方资料补全后复核」继续复核
+       （区别于终态「审核不通过」——后者驳回后不可补件续办） */
+    fileWait: {
+      n:'待对方回传资料', tc:'warn', mode:'run', cat:'wait', type:'待补充 · 对方补件',
+      mean:'保司复核发现材料不全，缺件说明已回传对方，等待对方补齐资料后再次进入复核。',
+      owner:'对方 · 芯银保保全',
+      next:'对方补齐资料回传后，任务流转「对方资料补全后复核」，继续复核流程。',
+      why:'监护关系证明缺失 · 第二投保人与被保险人关系证明缺失 · 签字影像不清晰需重传',
+      api:'image / second',
+      todo:[['0','按缺件说明补齐对方资料'],['0','补传资料上传影像系统受理单下'],['1','补全后任务自动回到复核']],
+      guide:[['1','联系对方客户经理，按缺件说明补传资料'],['2','补传后由芯银保上传影像系统，复制到子任务号下'],['3','补全后任务流转「对方资料补全后复核」，继续复核'],['!','补传资料仍不符合要求的，复核可能再次退回本节点']]
+    },
+    recheck: {
+      n:'对方资料补全后复核', tc:'brand', mode:'run', cat:'run', type:'进行中 · 补件后复核',
+      mean:'对方补充资料已回传，任务重新进入营运中心高级保全（按保单归属地）复核。',
+      owner:'营运中心高级保全',
+      next:'等待复核结论；复核通过生成电子批单并回传对方。',
+      why:'—（正常等待，可联系营运中心高级保全确认进度）',
+      api:'second',
+      todo:[['1','等待营运中心高级保全完成复核'],['1','复核资料含补传的对方资料'],['0','正常等待，无需额外操作']],
+      guide:[['1','复核重点：补传资料与原影像、确认单信息一致性'],['2','复核通过后生成电子批单并回传对方'],['!','若补传资料仍不符合要求，可能再次退回「待对方回传资料」']]
+    },
+    /* 复核未通过：终态。驳回原因经 errMsg 回传对方后任务终止，时间轴止于本节点，不再有后续节点 */
+    reviewFail: {
+      n:'审核不通过', tc:'danger', mode:'fail', cat:'fail', type:'终止 · 复核未通过',
+      mean:'营运中心高级保全复核未通过，驳回原因已通过 errMsg 回传对方，任务终止，不再流转后续节点。',
+      owner:'营运中心高级保全',
+      next:'按驳回原因整改资料后，由对方重新发起保全变更申请。',
+      why:'签字影像不清晰 · 监护关系证明缺失 · 第二投保人与被保险人关系证明缺失 · 影像资料与保单信息不一致',
+      api:'second',
+      todo:[['0','查看复核驳回原因与复核人员信息'],['0','按驳回原因整改资料或影像'],['0','整改后由对方重新发起保全变更申请'],['1','审核不通过为终态，原任务不可恢复']],
+      guide:[['1','在节点详情中查看审核不通过原因与复核人员信息'],['2','联系对方客户经理，按驳回原因整改资料'],['3','整改完成后由对方重新发起保全变更申请'],['!','审核不通过不可补件续办，必须重新发起申请']]
+    },
+    done: {
+      n:'完成', tc:'ok', mode:'done', cat:'done', type:'成功 · 终态',
+      mean:'复核通过，保全变更成功，电子批单已生成并回传对方，任务全生命周期结束。',
+      owner:'—（终态）',
+      next:'无需处理；如需凭证可在接口详情导出接口流水留档。',
+      why:'—',
+      api:'second / file',
+      todo:[['1','保全变更已生效'],['1','电子批单已回传对方'],['1','可在接口详情留档备查']],
+      guide:[['1','任务已完成，无需后续操作'],['2','如需凭证，在接口详情截图留档'],['3','客户可在对方查看变更后的信托委托人 / 受益人信息']]
+    },
+    /* 待生成：非节点状态（不进 ST_KEYS / 状态筛选），仅用于同一受理单号下优先级靠后的子任务 */
+    pending: {
+      n:'待生成', tc:'pend', mode:'pend', cat:'wait', type:'排队中 · 未生成',
+      mean:'同一受理单号下存在优先级更高的子任务尚未办结，本子任务节点暂未生成；待优先级最高的子任务到达终态，本任务节点状态同步更新。',
+      owner:'系统自动',
+      next:'等待优先级最高的子任务流转到终态（完成 / 申请失败 / 已撤销），届时本任务节点状态自动同步。',
+      why:'同一受理单号多子任务按 身故受益人变更 ＞ 生存金受益人变更 ＞ 投保人变更 串行办理',
+      api:'—（本任务尚未生成接口流水）',
+      todo:[['0','等待优先级更高的子任务办理完成'],['1','节点状态由系统同步，无需人工操作']],
+      guide:[['1','本子任务属同一受理单号下的后续任务，暂未生成节点'],['2','在优先级最高的子任务上查看当前卡点与处理方式即可'],['3','优先级最高的子任务到达终态后，本任务状态自动同步，无需重新申请']]
+    }
+  };
+  var ST_KEYS = ['init','applyFail','printWait','signWait','canceled','signedWait','fileWait','recheck','reviewFail','done'];
+  /* 状态字典展示项：9 个节点状态 + 待生成 */
+  var DICT_KEYS = ST_KEYS.concat(['pending']);
+
+  /* 业务优先级：同一受理单号下只有优先级最高的子任务走正常流程 */
+  var BIZ_PRIORITY = {'身故受益人变更':1, '生存金受益人变更':2, '投保人变更':3, '指定第二投保人变更':4};
+  function bizPriority(name){ return BIZ_PRIORITY[name] || 9; }
+  function isEndStatus(k){ var s = STATUS[k]; return !!s && (s.mode === 'done' || s.mode === 'fail' || s.mode === 'cancel'); }
+  /* 同一受理单号下（当前保单内）优先级最高的子任务下标 */
+  function topTaskIdx(p, acc){
+    var best = -1, bp = 99;
+    (p.tasks || []).forEach(function(t, i){
+      if ((t.accept || p.acceptNo) !== acc) return;
+      var pr = bizPriority(t.name);
+      if (pr < bp){ bp = pr; best = i; }
+    });
+    return best;
+  }
+  /* 子任务对外展示视图：优先级最高的走正常流程；其余在它办结前为「待生成」，办结后同步其状态与节点时间 */
+  function effView(p, i){
+    var t = p.tasks[i], acc = t.accept || p.acceptNo;
+    var top = topTaskIdx(p, acc);
+    if (top < 0 || top === i) return t;
+    var tt = p.tasks[top];
+    if (!isEndStatus(tt.status)){
+      return {id:t.id, name:t.name, accept:t.accept, status:'pending', times:{}, dates:[],
+              topName:tt.name, topStatus:tt.status};
+    }
+    return {id:t.id, name:t.name, accept:t.accept, status:tt.status,
+            times:tt.times, dates:tt.dates, reason:tt.reason, waitDays:tt.waitDays,
+            failDate:tt.failDate, cancelTime:tt.cancelTime, suppDate:tt.suppDate, reDate:tt.reDate,
+            topName:tt.name, topStatus:tt.status, synced:true};
+  }
+
+  /* ==========================================================
+     二、生命周期主链路 + 分支节点
+     五条流转路径：
+     ① 发起 → 申请失败（终态）
+     ② 发起 → 行方确认书打印 → 待客户签字 → 已撤销（终态）
+     ③ 发起 → 行方确认书打印 → 待客户签字 → 已签字待复核 → 待对方回传资料（若有）→ 对方资料补全后复核 → 完成
+     ④ 发起 → 行方确认书打印 → 待客户签字 → 已签字待复核 → 完成
+     ⑤ 发起 → 行方确认书打印 → 待客户签字 → 已签字待复核 → 审核不通过（终态）
+     （行方确认书打印为行方侧节点：保司下发待签署合同信息后由行方下载打印，打印完成后才进入客户签署）
+     ========================================================== */
+  var MAIN = [
+    {t:'对方发起申请'},
+    {t:'行方确认书打印'},
+    {t:'待客户签字'},
+    {t:'客户已签字待复核'},
+    {t:'完成'}
+  ];
+  var BRANCH = {
+    supp: {t:'待对方回传资料'},
+    re:   {t:'对方资料补全后复核'}
+  };
+  /* 复核审核人信息（「待对方回传资料」节点可查看详情） */
+  var AUDITOR = {name:'李伟', no:'B20518', tel:'021-5877 6621'};
+
+  /* ==========================================================
+     三之二、节点状态说明文案（业务确认版）
+     点开节点「详情」后展示；含复核人的节点可点「详情」展开复核人员信息
+     ========================================================== */
+  function auditorInfo(){
+    return '复核人员信息：姓名 ' + AUDITOR.name + '，工号 ' + AUDITOR.no + '，联系方式 ' + AUDITOR.tel;
+  }
+  var NODE_COPY = {
+    init: function(){ return '申请报文已接收'; },
+    applyFail: function(t){
+      return '保司校验未通过，失败原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起';
+    },
+    /* 行方确认书打印：保司已下发待签署合同信息，等待行方下载打印；确认书下发失败时单独提示 */
+    printWait: function(t, st){
+      if (t.signPush === 'fail') return '对方确认书下发失败，行方无法下载打印，需排查推送链路后重新推送';
+      return '待签署合同信息已下发，等待行方下载并打印确认书，已等待 ' + (t.printDays || t.waitDays || 0) + ' 天';
+    },
+    /* 待客户签字：文案固定，不随任务后续状态变化（已签字 / 已撤销都保留等待签署与 180 天提示）；
+       仅「确认单推送失败」这一异常链路单独提示，避免出现「推送成功」与实际不符 */
+    signWait: function(t, st){
+      if (t.signPush === 'fail') return '对方确认书下发失败，行方无法下载打印，需排查下发链路后重新下发';
+      return '对方确认单推送成功，等待客户签署并回传签字单证，已等待 ' + (t.waitDays || 0) +
+             ' 天，超 180 天未签署将自动撤销';
+    },
+    /* 客户已签字待复核：文案固定，不随任务后续状态变化（材料不全 / 审核不通过 / 正常办结都一样）；
+       复核结论与缺件说明分别由后续节点「待对方回传资料」「审核不通过」承载 */
+    signedWait: function(t, st){
+      return '客户已回传签字单证，等待保司复核。' + auditorInfo();
+    },
+    /* 审核不通过（复核未通过） */
+    signedWaitFail: function(t){
+      return '复核不通过，驳回原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起。' + auditorInfo();
+    },
+    /* 审核不通过：时间轴上的独立终态节点（位于「客户已签字待复核」之后） */
+    reviewFail: function(t){
+      return '复核不通过，驳回原因：' + (t.reason || '—') + '。任务终止，整改后可重新发起。' + auditorInfo();
+    },
+    /* 待对方回传资料（复核发现材料不全，非终态，补件后回复核）：文案固定，不随补件进度变化；
+       缺件说明不在节点外展示，统一放在「详情」弹层（复核人员信息 + 缺件说明） */
+    fileWait: function(t, st){
+      return '保司复核发现材料不全，需对方补充资料，对方补件完成后可再次进入复核。';
+    },
+    /* 对方资料补全后复核：文案固定，不随复核结果变化（复核结论由「完成」节点承载）；
+       复核人员信息仅放「详情」弹层，时间轴上由 nodeCopyBrief 隐去 */
+    recheck: function(t, st){
+      return '对方已回传补充资料，等待保司复核。' + auditorInfo();
+    },
+    done: function(){ return '保全任务变更完成，流程完结'; },
+    canceled: function(t){
+      return '撤销原因：' + (t.reason || '—') + '，任务结束';
+    }
+  };
+  /* 含复核人员信息的节点：文案默认收起，点「详情」展开 */
+  var AUDITOR_NODES = ['signedWait','signedWaitFail','reviewFail','recheck'];
+  /* 复核不通过时「客户已签字待复核」节点复用 signedWaitFail 文案 */
+  function nodeCopyKey(sk, failed){ return (sk === 'signedWait' && failed) ? 'signedWaitFail' : sk; }
+  function nodeCopyText(sk, task, failed, st){
+    var fn = NODE_COPY[nodeCopyKey(sk, failed)];
+    return fn ? fn(task, st) : '';
+  }
+  /* 简版文案：隐去复核人员信息（时间轴节点下方展示；完整版仅在「详情」弹层展示） */
+  function nodeCopyBrief(sk, task, failed, st){
+    var full = nodeCopyText(sk, task, failed, st);
+    if (!full) return '';
+    if (AUDITOR_NODES.indexOf(nodeCopyKey(sk, failed)) < 0) return full;
+    var short = full.replace(/。?复核人员信息：[^。]*。?/, function(m){ return m.charAt(0) === '。' ? '。' : ''; });
+    return short || full;
+  }
+  /* 弹层「节点说明」块：复核类节点（含复核人员信息）已改走「审核详情」精简弹层，
+     此处仅作非复核类节点的兜底渲染 */
+  function nodeCopyHTML(sk, task, failed, st){
+    var full = nodeCopyText(sk, task, failed, st);
+    if (!full) return '';
+    return '<div class="nd-copy"><span class="tx">' + full + '</span></div>';
+  }
+
+  /* ==========================================================
+     三、接口元数据
+     ========================================================== */
+  var API_ORDER = ['apply','image','first','print','sign','second','file','cancel'];
+  var API_META = {
+    apply:  {name:'保全变更申请',        code:'CMB-TRS-apply',      dir:'招行 → 芯银保 → 个保全', node:'对方发起申请',
+             desc:'校验第二投保人、代办人、信托公司后生成受理单与批单任务'},
+    image:  {name:'影像上传通知（485）', code:'CMB-IMG-upload',     dir:'芯银保 → 影像系统 → 个保全', node:'对方发起申请',
+             desc:'对方资料影像上传受理单下，成功后复制到各子任务号下'},
+    first:  {name:'确认单下发（486）',   code:'CMB-TRS-confirm',    dir:'个保全 → 芯银保 → 开放平台', node:'待客户签字',
+             desc:'校验通过后生成对方确认单并推送客户，不通过则申请失败'},
+    print:  {name:'确认书下载打印',      code:'CMB-TRS-print',      dir:'个保全 → 芯银保 → 招行', node:'行方确认书打印',
+             desc:'行方下载待签署确认书文件（PBFTCSID）并打印，交客户签署后回传'},
+    sign:   {name:'客户签字单证回传',    code:'CMB-TRS-signBack',   dir:'招行 → 芯银保 → 个保全', node:'客户已签字待复核',
+             desc:'签字确认单 + 人脸识别影像回传，任务流转复核'},
+    second: {name:'复核结果通知',        code:'CMB-TRS-recheck',    dir:'个保全 → 芯银保 → 招行', node:'客户已签字待复核',
+             desc:'复核结论通知对方；审核不通过时流转待对方回传资料'},
+    file:   {name:'保全批单文件通知',    code:'CMB-TRS-fileNotify', dir:'个保全 → 芯银保 OSS → 招行', node:'完成',
+             desc:'电子批单传芯银保 OSS 后调用文件通知接口回传对方，失败 3 分钟重试一次直至成功'},
+    cancel: {name:'任务取消 / 回退通知', code:'CMB-TRS-cancel',     dir:'个保全 → 芯银保 → 招行', node:'已撤销',
+             desc:'超 180 天未签署或对方回退时，取消本受理单下的任务'}
+  };
+  var NODE_LABEL = {apply:'保全申请', image:'影像上传', first:'确认单下发', print:'确认书打印', sign:'签字回传', second:'复核结果', file:'批单回传', cancel:'任务撤销'};
+
+  /* ==========================================================
+     三之二、节点卡点诊断 + 接口报文
+     接口码取自《家族信托系统接口设计说明书-保险公司202503_202504_0428》
+     节点规则取自《招行云信托1.5和2.0业务线上化》需求规格说明书 V2.6
+     side: bank 对方侧 / ins 保司侧（芯银保·个保全·营运中心）/ cust 客户侧 / none 无需处理
+     ========================================================== */
+  var IFACE_META = {
+    irc2:  {code:'PBFTIRC2',   name:'客户申请保全变更信息下载 V2',   dir:'招行 → 芯银保 → 个保全'},
+    iivr:  {code:'PBFTIIVR',   name:'保单信息校验（招行推送）',       dir:'招行 → 芯银保 → 个保全'},
+    iivb:  {code:'PBFTIIVB',   name:'保单信息校验结果上送',           dir:'个保全 → 芯银保 → 招行'},
+    isf2:  {code:'PBFTISF2X2', name:'受理成功 + 待签署合同信息',      dir:'个保全 → 芯银保 → 招行'},
+    isf3:  {code:'PBFTISF2X3', name:'受理失败错误信息（errMsg）',     dir:'个保全 → 芯银保 → 招行'},
+    csid:  {code:'PBFTCSID',   name:'客户签署文件下载',               dir:'个保全 → 芯银保 → 招行'},
+    img485:{code:'影像 485',    name:'保全服务受理单影像',             dir:'芯银保 → 影像系统 → 个保全'},
+    img486:{code:'影像 486',    name:'保全信托业务对方确认书',         dir:'个保全 → 芯银保 → 对方'},
+    signb: {code:'影像回传',    name:'签字确认单 + 人脸识别影像',      dir:'对方 → 芯银保 → 影像系统'},
+    suppb: {code:'影像回传',    name:'对方补充资料影像',               dir:'对方 → 芯银保 → 影像系统'},
+    rtn2:  {code:'PBFTRTNUX2', name:'保全变更成功 + 批单文件',        dir:'个保全 → 芯银保 OSS → 招行'},
+    rtn3:  {code:'PBFTRTNUX3', name:'处理失败错误信息（errMsg）',     dir:'个保全 → 芯银保 → 招行'},
+    basb:  {code:'PBFTBASB',   name:'公共消息回执（returnCode）',     dir:'招行 → 芯银保 → 个保全'},
+    ireb:  {code:'PBFTIREB',   name:'保全变更流程回退申请',           dir:'招行 → 芯银保 → 个保全'},
+    irec:  {code:'PBFTIREC',   name:'回退回执（status Y/N）',         dir:'个保全 → 芯银保 → 招行'}
+  };
+  var IFACE_ST = {
+    ok:  {n:'推送成功', cls:'ok'},
+    run: {n:'处理中',   cls:'run'},
+    wait:{n:'等待回传', cls:'wait'},
+    fail:{n:'推送失败', cls:'fail'},
+    pend:{n:'未触发',   cls:'pend'}
+  };
+  var CONTACT = {
+    accept: {n:'张敏 · 受理（个保全）', o:'工号 A10293 · 保单归属地营运中心', t:'021-5876 8890', href:'tel:02158768890'},
+    audit:  {n:'李伟 · 复核（高级保全）', o:'工号 B20518 · 营运中心高级保全', t:'021-5877 6621', href:'tel:02158776621'},
+    bank:   {n:'王芳 · 银保对接人', o:'芯银保保全 · 负责确认书与批单回传', t:'138 **** 4021', href:'tel:13800004021'}
+  };
+  /* v5：NODE_DIAG 新增 sys（卡点系统：行方 / 银保通 · 芯银保 / 个保全 / 营运中心）与
+     每个接口的 rc（返回码 / 回执：RTNCOD、returnCode、errMsg、status），
+     业务员点开「详情」即可看到接口流转调用成功或失败及其返回，无需找运维定位 */
+  var NODE_DIAG = {
+    init: {
+      side:'ins', sideText:'卡在保司侧', sys:'卡点系统：个保全（受理校验）',
+      basis:'行方申请报文已到达保司，保司正在做保单信息校验（业务类型支持性、第二投保人 / 监护人 / 信托公司信息、反洗钱名单、客户五要素）并生成受理单（21 开头）与批单任务（83 开头），此阶段与行方无关。',
+      hint:'保司校验中 · 报文已接收',
+      doneHint:'申请报文已接收，受理单与批单任务已生成',
+      ifaces:[
+        {k:'irc2',   st:'ok',   tk:'apply', rc:'RTNCOD=000000 · 报文接收成功', note:'行方已上送保全变更申请（含保单号、投被保人、保全变更模式 1.0/1.5/2.0）'},
+        {k:'iivr',   st:'run',  tk:'',      rc:'校验执行中 · 结论待回送', note:'校验投被保人信息、反洗钱名单、保全项是否可变更信托'},
+        {k:'iivb',   st:'wait', tk:'',      rc:'—（校验结论未出，暂无回送）', note:'回送 insuranceInfoIsCorrect / changePermit，不通过则附 errorMsg'},
+        {k:'img485', st:'ok',   tk:'image', rc:'上传成功 · 影像已落地并复制到子任务', note:'行方资料影像上传受理单下，成功后复制到各子任务批单号下'}
+      ],
+      locate:'报文已进入保司系统、卡点在保司侧（个保全）。正常几分钟内完成；若超 30 分钟仍停留，请芯银保核对行方 PBFTIRC2 是否上送成功（无需业务员找运维查单）。',
+      action:'正常等待即可；超时未流转联系芯银保核对上送报文。',
+      who:CONTACT.accept
+    },
+    applyFail: {
+      side:'bank', sideText:'卡在行方侧（需整改重发）', sys:'行方 · 招行云信托（整改后重新发起）',
+      basis:'保司校验未通过，失败原因已通过 PBFTISF2X3（errMsg）回传行方，任务终止，需行方整改后重新发起。',
+      hint:'失败原因已回传行方 · 卡在行方侧',
+      doneHint:'—',
+      ifaces:[
+        {k:'irc2', st:'ok',  tk:'apply', rc:'RTNCOD=000000 · 报文接收成功', note:'行方已上送保全变更申请'},
+        {k:'iivr', st:'ok',  tk:'',      rc:'校验已执行（本次未通过）', note:'保单信息校验已执行'},
+        {k:'iivb', st:'fail',tk:'',      rc:function(task){ return 'insuranceInfoIsCorrect=N · errMsg=' + (task.reason || '申请校验未通过'); }, note:'校验结果 N，errorMsg 为不通过原因（非招行渠道 / 反洗钱 / 客户信息不一致 / 保全项不可办理等）'},
+        {k:'isf3', st:'ok',  tk:'failDate', rc:function(task){ return 'RTNCOD=000000 · errMsg 已回传行方'; }, note:function(task){ return 'errMsg 已回传行方：' + (task.reason || '申请校验未通过'); }}
+      ],
+      locate:'保司侧已完成校验并把失败原因推回行方，卡点在行方侧（需整改后重新发起申请）。原任务为终态，不可补件续办。',
+      action:'把失败原因告知行方客户经理 → 整改客户信息 / 影像 / 渠道 → 由行方重新发起保全变更申请。',
+      who:CONTACT.bank
+    },
+    /* 行方确认书打印：保司侧已下发待签署合同信息 + 确认书影像（486），卡点在行方侧（下载 / 打印） */
+    printWait: {
+      side:'bank', sideText:'卡在行方侧（确认书待打印）', sys:'行方 · 招行云信托（确认书打印）',
+      basis:'保司已受理成功，待签署合同信息与确认书影像（486）均已下发行方，保司侧动作全部完成；当前等待行方下载确认书并打印，打印后交客户签署。',
+      hint:'确认书已下发行方 · 待行方打印',
+      doneHint:'行方已下载并打印确认书，已交客户签署',
+      ifaces:[
+        {k:'isf2',   st:'ok',   tk:'first', rc:'RTNCOD=000000 · 受理成功', note:'受理成功并回传待签署合同信息（2.0：D02DS270；1.5：D02DS272，已婚加 D02DS288）'},
+        {k:'img486', st:'ok',   tk:'first', rc:'推送成功 · 已收到行方接收回执', note:'行方确认书（影像 486）已生成并下发行方，供行方下载打印'},
+        {k:'csid',   st:'wait', tk:'print', rc:'—（行方尚未下载确认书）', note:'行方通过客户签署文件下载接口取得确认书 PDF 用于打印',
+                                            doneNote:'行方已下载确认书并完成打印，交客户签署', doneSt:'ok', doneRc:'RTNCOD=000000 · 文件下载成功'},
+        {k:'basb',   st:'wait', tk:'',      rc:'—（行方尚未回执）', note:'行方接收回执（returnCode），未回执说明行方侧未确认接收',
+                                            doneNote:'行方已回执 returnCode=SUCCESS，报文接收成功', doneRc:'returnCode=SUCCESS'}
+      ],
+      locate:'保司接口已推送成功（受理成功 + 确认书 486 均已收到行方回执），卡点不在保司：行方尚未下载打印确认书。可直接答复行方「接口返回推送成功」，再联系行方客户经理下载打印，无需运维介入。',
+      action:'联系行方客户经理在招行云信托下载待签署确认书 → 打印后交客户签署 → 签署完成回传签字单证。',
+      who:CONTACT.bank
+    },
+    signWait: {
+      side:'cust', sideText:'卡在客户 / 行方侧', sys:'行方 · 招行云信托（客户签署）',
+      basis:'行方已下载并打印确认书，保司侧动作全部完成；当前等待客户签署、行方回传签字单证。',
+      hint:'确认书已打印 · 等待客户签署回传',
+      doneHint:'客户签字单证已回传',
+      ifaces:[
+        {k:'csid',   st:'ok',   tk:'print', rc:'RTNCOD=000000 · 确认书已下载打印', note:'行方已下载确认书并完成打印，交客户签署'},
+        {k:'signb',  st:'wait', tk:'',      rc:'—（待客户签署后回传）', note:'客户签署后的确认书 + 人脸识别影像，由行方回传、芯银保上传影像系统',
+                                            doneNote:'客户签字单证已回传，并复制到受理单下全部子任务', doneRc:'影像落地成功 · 已复制到子任务'},
+        {k:'basb',   st:'wait', tk:'',      rc:'—（行方尚未回执）', note:'行方接收回执（returnCode），未回执说明行方侧未确认接收',
+                                            doneNote:'行方已回执 returnCode=SUCCESS，报文接收成功', doneRc:'returnCode=SUCCESS'}
+      ],
+      locate:'保司接口已推送成功（受理成功 + 确认单均已收到行方回执），卡点不在保司：客户未签署或行方未回传签字单证。可直接答复行方「接口返回推送成功」，再联系行方客户经理催办即可，无需运维介入。',
+      action:'联系行方客户经理确认客户是否已收到确认单 → 引导客户完成电子签署（未成年人由监护人代签，2.0 需信托公司签章）。',
+      who:CONTACT.bank
+    },
+    canceled: {
+      side:'bank', sideText:'已终止（行方回退 / 超期自动）', sys:'行方 · 招行云信托 / 系统自动',
+      basis:'客户签署回传前行方发起回退（PBFTIREB），或客户签字超期未回传由系统自动撤销，撤销结果已通知银保与行方。',
+      hint:'已通知行方撤销 · 无需处理',
+      doneHint:'—',
+      ifaces:[
+        {k:'img486', st:'pend', tk:'',      rc:'—（客户未签署回传）', note:'行方确认书（影像 486）客户未完成签署回传'},
+        {k:'ireb',   st:function(task){ return (task.reason && task.reason.indexOf('回退') > -1) ? 'ok' : 'pend'; },
+                     tk:'', rc:function(task){ return (task.reason && task.reason.indexOf('回退') > -1) ? 'rebackStatus=REBK（回退到重新推送申请）' : '—（非行方回退触发）'; }, note:'行方回退保全变更申请（REBK 回退到重新推送申请 / REJP 强制撤销）'},
+        {k:'irec',   st:function(task){ return (task.reason && task.reason.indexOf('回退') > -1) ? 'ok' : 'pend'; },
+                     tk:'cancel', rc:function(task){ return (task.reason && task.reason.indexOf('回退') > -1) ? 'status=Y · 回退成功' : '—（超期自动撤销，无需回执）'; }, note:'保司回退回执 status=Y 回退成功（可再次发起）/ N 回退失败（流程停在原节点）'}
+      ],
+      locate:'若由行方回退：卡点在行方侧，行方确认业务诉求后重新发起即可；若为超期自动撤销：系统已通知银保并由银保通知行方，保司无卡单。',
+      action:'确认撤销触发方（行方回退 / 超期）→ 如需继续办理，由行方重新发起保全变更申请。',
+      who:CONTACT.bank
+    },
+    signedWait: {
+      side:'ins', sideText:'卡在保司侧（复核中）', sys:'卡点系统：营运中心（高级保全）',
+      basis:'客户签字单证与人脸识别影像已回传并复制到子任务下，任务已上送营运中心高级保全（按保单归属地）二次审核。',
+      hint:'签字件已回传 · 卡在保司复核',
+      /* 复核通过 → 完成；材料不全 → 待行方回传资料；复核不通过 → 终态，任务终止（后面没有节点） */
+      doneHint:function(task){
+        if (task.status === 'done') return '复核通过，电子批单已生成';
+        if (task.status === 'fileWait') return '复核发现材料不全，缺件说明已回传行方';
+        if (task.status === 'recheck') return '复核发现材料不全，行方补件后再次复核';
+        return '复核不通过，任务终止，整改后可重新发起';
+      },
+      ifaces:[
+        {k:'signb', st:'ok',  tk:'sign', rc:'影像落地成功 · 已复制到子任务', note:'签字确认单 + 人脸识别影像已回传，复制至受理单下全部子任务'},
+        {k:'img485',st:'ok',  tk:'image',rc:'影像齐备', note:'保全服务受理单（485）+ 行方资料影像齐备'},
+        {k:'rtn3',  st:function(task){ return (task.status === 'reviewFail' || task.status === 'fileWait' || task.status === 'recheck') ? 'ok' : 'pend'; },
+                    tk:'second',
+                    rc:function(task){
+                      if (task.status === 'reviewFail') return 'errMsg=' + (task.reason || '影像资料与保单信息不一致');
+                      if (task.status === 'fileWait' || task.status === 'recheck') return 'errMsg=' + (task.suppList || task.reason || '材料不全，需补充资料');
+                      return '—（复核中，暂无 errMsg）'; },
+                    note:function(task){
+                      if (task.status === 'reviewFail') return '复核不通过，驳回原因 errMsg 已回传行方：' + (task.reason || '影像资料与保单信息不一致');
+                      if (task.status === 'fileWait' || task.status === 'recheck') return '复核发现材料不全，缺件说明 errMsg 已回传行方：' + (task.suppList || task.reason || '材料不全，需补充资料');
+                      return '复核不通过 / 材料不全时通过 errMsg 回传原因，当前尚未产生'; },
+                    doneNote:'复核通过，无 errMsg 回传', doneRc:'—（复核通过，无 errMsg）'}
+      ],
+      locate:'行方资料已全部回传，卡点在保司侧（营运中心复核），无需反复催行方；复核重点为服务受理单 PDF 与确认单签章一致性。',
+      action:'等待营运中心复核结论；如需催办联系复核人（按保单归属地分配）。',
+      who:CONTACT.audit
+    },
+    fileWait: {
+      side:'bank', sideText:'卡在行方侧（待补件）', sys:'行方 · 招行云信托（补传资料）',
+      basis:'保司复核发现材料不全，缺件说明已回传行方，等待行方按缺件说明补传资料后继续复核。',
+      hint:'缺件说明已回传行方 · 卡在行方侧',
+      doneHint:'行方补件已回传，任务回到复核',
+      ifaces:[
+        {k:'rtn3',  st:'ok',  tk:'second', rc:function(task){ return 'errMsg=' + (task.suppList || task.reason || '材料不全，需补充资料'); }, note:function(task){ return '缺件说明 errMsg 已回传行方：' + (task.suppList || task.reason || '材料不全，需补充资料'); }},
+        {k:'suppb', st:'wait',tk:'suppDate', rc:'—（待行方补传）', note:'行方补充资料影像，由芯银保上传影像系统并复制到子任务下', doneRc:'补件影像落地成功'},
+        {k:'rtn2',  st:'pend',tk:'', rc:'—（未触发）', note:'变更成功后才上送批单文件，当前未触发'}
+      ],
+      locate:'保司侧已复核并回传缺件说明（errMsg 推送成功），卡点在行方侧（补传资料）。把缺件说明原话转给行方客户经理即可，无需运维定位。',
+      action:'联系行方客户经理按缺件说明补传资料 → 芯银保上传影像 → 任务自动回到复核。',
+      who:CONTACT.bank
+    },
+    recheck: {
+      side:'ins', sideText:'卡在保司侧（复核中）', sys:'卡点系统：营运中心（高级保全）',
+      basis:'行方补充资料已回传，任务重新进入营运中心高级保全复核。',
+      hint:'补件已回传 · 卡在保司复核',
+      doneHint:'补件复核通过，电子批单已生成',
+      ifaces:[
+        {k:'suppb', st:'ok', tk:'suppDate', rc:'补件影像落地成功', note:'行方补充资料影像已回传并复制到子任务下'},
+        {k:'signb', st:'ok', tk:'sign',     rc:'影像落地成功', note:'签字确认单 + 人脸识别影像齐备'},
+        {k:'rtn2',  st:'pend', tk:'',       rc:'—（未触发）', note:'复核通过后上送批单文件，当前未触发', doneSt:'ok',
+                                            doneNote:'复核通过，批单文件已上送', doneRc:'returnCode=SUCCESS'}
+      ],
+      locate:'补件已回传，卡点在保司侧（营运中心复核），复核重点为补传资料与原影像、确认单信息的一致性。',
+      action:'等待复核结论；若再次不通过，会重新回到「待行方回传资料」并附新的不通过原因。',
+      who:CONTACT.audit
+    },
+    reviewFail: {
+      side:'bank', sideText:'复核驳回 · 卡在行方侧（整改重发）', sys:'保司营运中心已办结 · 待行方整改',
+      basis:'营运中心高级保全复核未通过，驳回原因已通过 errMsg 回传行方，任务终止，不再流转后续节点。',
+      hint:'复核驳回 · 原因已回传行方',
+      doneHint:'—',
+      ifaces:[
+        {k:'signb', st:'ok',  tk:'sign', rc:'影像落地成功（复核已核验）', note:'签字确认单 + 人脸识别影像已回传并核验'},
+        {k:'rtn3',  st:'fail', tk:'second', rc:function(task){ return 'errMsg=' + (task.reason || '影像资料与保单信息不一致'); },
+                    note:function(task){ return '复核不通过，驳回原因 errMsg 已回传行方：' + (task.reason || '影像资料与保单信息不一致'); }},
+        {k:'rtn2',  st:'pend', tk:'', rc:'—（任务终止，未触发）', note:'变更成功才上送批单文件，本次未触发'}
+      ],
+      locate:'复核在保司侧已办结（驳回）：驳回原因已通过 errMsg 推送成功回传行方，卡点在行方侧整改——需按驳回原因整改资料后由行方重新发起申请（原任务为终态）。',
+      action:'按驳回原因整改资料 / 影像 → 由行方重新发起保全变更申请（审核不通过不可补件续办）。',
+      who:CONTACT.audit
+    },
+    done: {
+      side:'none', sideText:'无卡点 · 已办结', sys:'',
+      basis:'复核通过，保全变更生效，电子批单已生成并回传行方，行方回执 SUCCESS，任务全生命周期结束。',
+      hint:'批单已回传 · 行方回执 SUCCESS',
+      doneHint:'批单已回传 · 行方回执 SUCCESS',
+      ifaces:[
+        {k:'rtn2', st:'ok', tk:'file', rc:'returnCode=SUCCESS · subReturnCode=SUCCESS', note:'批单文件上送（D02DS65 保全变更生效批单 + D02DS318 申请书影像）'},
+        {k:'basb', st:'ok', tk:'',     rc:'returnCode=SUCCESS', note:'行方回执 returnCode=SUCCESS，subReturnCode=SUCCESS'},
+        {k:'csid', st:'ok', tk:'',     rc:'RTNCOD=000000 · 文件可下载', note:'客户签署文件可供行方下载，客户可在行方查看变更后的信托委托人 / 受益人'}
+      ],
+      locate:'全流程接口均已推送成功并收到成功回执，无卡点，无需任何处理。',
+      action:'无需处理；如需凭证可对本节点接口详情截图留档。',
+      who:null
+    }
+  };
+  function timeOf(task, tk){
+    if (!tk) return '';
+    if (task.times && task.times[tk]) return task.times[tk];
+    return task[tk] || '';
+  }
+  /* doneHint 既可为字符串，也可为函数（需结合任务的最终状态判断，如「复核通过」还是「复核不通过」） */
+  function doneHintOf(d, task){
+    var v = d.doneHint;
+    return (typeof v === 'function') ? v(task) : v;
+  }
+  /* 确认书下发失败：卡在「行方确认书打印」节点（保司已生成 486 但未收到行方接收回执） */
+  function isPushFailed(task, sk){
+    if (!task || task.signPush !== 'fail') return false;
+    if (sk === 'printWait') return task.status === 'printWait';
+    return sk === 'signWait' && task.status === 'signWait';
+  }
+  function diagHint(sk, st, task){
+    var d = NODE_DIAG[sk];
+    if (!d) return '';
+    if (st === 'done') return doneHintOf(d, task) || '已完成';
+    if (isPushFailed(task, sk)) return '确认书下发失败 · 需排查后重新推送';
+    return d.hint;
+  }
+  /* 复核未通过（终态）时，签字待复核节点为「审核不通过」而非「已通过」 */
+  function isReviewFailed(task, sk){
+    return sk === 'reviewFail' && task.status === 'reviewFail';
+  }
+
+  /* ==========================================================
+     三之二、节点专属字段（需求文档「节点专属字段」表）
+     core:1 = 核心卡点字段，在详情弹窗置顶展示、优先展示原因类文案
+     ent    = 单据类在线预览 / 资料上传入口（无附件时不渲染）
+     ========================================================== */
+  var CUST_TEL = '138****8662';       /* 演示用客户手机号（脱敏） */
+  var PUSH_CH  = '招行云信托线上流程 · 芯银保保全';
+  function hasImg(task, kw){
+    return imagesOf(task).some(function(r){ return r[0] === 1 && String(r[1]).indexOf(kw) > -1; });
+  }
+  function lastTime(task){
+    var d = task.dates || [];
+    for (var i = d.length - 1; i >= 0; i--) if (d[i]) return d[i];
+    return '';
+  }
+  function entHTML(e){
+    if (!e) return '';
+    return '<button class="nd-ent' + (e.up ? ' up' : '') + '" data-prev="' + e.a + '">' + e.t + '</button>';
+  }
+  /* v5：单据模板名（取自 Word 附件：保全业务确认书 / 保险合同批单，按任务类型匹配） */
+  function confirmDocName(name){
+    name = name || '';
+    if (name.indexOf('投保人变更') > -1) return '保全业务确认书（投保人变更+变更身故/生存保险金受益人）';
+    if (name.indexOf('第二投保人') > -1) return '保全业务确认书（预指定投保人+变更受益人）';
+    return '保全业务确认书（变更身故/生存保险金受益人）';
+  }
+  function pidianDocName(name){
+    return (name || '').indexOf('生存金') > -1 ? '保险合同指定生存金受益人批单' : '保险合同身故受益人变更批单';
+  }
+  var NODE_FIELDS = {
+    init: [
+      {k:'受理校验项', core:1, v:'业务类型支持性 · 第二投保人 / 监护人 / 信托公司信息 · 反洗钱名单 · 客户信息五要素（姓名 / 证件 / 性别 / 出生日期 / 联系方式）'},
+      {k:'服务受理单', core:1, v:function(t){ return hasImg(t, '485') ? '保全服务受理单（含申请项目明细）' : '生成中（21 开头受理单号）'; }},
+      {k:'申请方', v:'行方（招行云信托） · 经机构外联数据传输平台中转'}
+    ],
+    applyFail: [
+      {k:'失败原因', core:1, v:function(t){ return t.reason || '申请校验未通过'; }},
+      {k:'失败代码', core:1, v:function(t){ return t.failCode || 'PBFTISF2X3 · errMsg'; }},
+      {k:'返回报文', core:1, v:function(t){ return t.failMsg || '失败原因已通过 PBFTISF2X3（errMsg）回传行方，原文见下方接口流转'; }},
+      {k:'是否可重新发起', core:1, v:function(t){ return t.retryable || '可重新发起：按失败原因整改后由行方重新上送（原任务为终态，不可补件续办）'; }},
+      {k:'任务终止时间', v:function(t){ return t.failDate || ''; }}
+    ],
+    printWait: [
+      {k:'确认书模板', core:1, v:function(t){ return confirmDocName(t.name); }},
+      {k:'下发渠道', core:1, v:PUSH_CH},
+      {k:'下发状态', core:1, v:function(t){ return (t.signPush === 'fail')
+         ? '下发失败 · 未收到行方接收回执，需排查推送链路后重新推送'
+         : '下发成功 · 已收到行方接收回执（returnCode=SUCCESS）'; }},
+      {k:'下发时间', core:1, v:function(t){ var f = (t.times && t.times.first) || t.dates[1] || ''; return f ? String(f).slice(0, 16) : ''; }},
+      {k:'打印状态', core:1, v:function(t){ return (t.signPush === 'fail')
+         ? '下发失败 · 行方未收到确认书，无法打印'
+         : ((t.times && t.times.print)
+             ? '已打印 · 行方已下载确认书 PDF 并打印，待交客户签署'
+             : '待打印 · 行方尚未下载确认书'); }},
+      {k:'打印时间', v:function(t){ return (t.times && t.times.print) || ''; }},
+      {k:'确认单预览', core:1, v:function(t){ return hasImg(t, '486') ? confirmDocName(t.name) : ''; },
+       ent:function(t){ return hasImg(t, '486') ? {t:'预览', a:confirmDocName(t.name)} : null; }},
+      {k:'打印方', v:'行方（招行云信托） · 打印后交客户签署并回传'}
+    ],
+    signWait: [
+      {k:'推送渠道', core:1, v:PUSH_CH},
+      {k:'推送状态', core:1, v:function(t){ return t.pushStatus || ((t.signPush === 'fail')
+         ? '推送失败 · 未收到对方接收回执，需排查推送问题后重新推送'
+         : '推送成功 · 已收到对方接收回执（returnCode=SUCCESS）'); }},
+      {k:'确认书打印时间', core:1, v:function(t){ return (t.times && t.times.print) || t.dates[2] || ''; }},
+      {k:'客户手机号', core:1, v:CUST_TEL},
+      {k:'确认单预览', core:1, v:function(t){ return hasImg(t, '486') ? confirmDocName(t.name) : ''; },
+       ent:function(t){ return hasImg(t, '486') ? {t:'预览', a:confirmDocName(t.name)} : null; }},
+      {k:'等待天数', v:function(t){ return t.waitDays ? ('已等待 ' + t.waitDays + ' 天 · 超 180 天未签署自动撤销') : ''; }}
+    ],
+    canceled: [
+      {k:'撤销原因', core:1, v:function(t){ return t.reason || '任务撤销'; }},
+      {k:'撤销类型', core:1, v:function(t){ return t.cancelType || '超时自动撤销'; }},
+      {k:'撤销操作人', core:1, v:function(t){ return t.cancelBy || '系统自动（超期未回传触发）'; }},
+      {k:'撤销时间', core:1, v:function(t){ return t.cancelTime || (t.times && t.times.cancel) || ''; }}
+    ],
+    signedWait: [
+      {k:'客户签字时间', v:function(t){ return (t.times && t.times.sign) || ''; }},
+      {k:'电子签校验结果', v:function(t){ return t.signVerify || '校验通过 · 人脸识别比对一致'; }},
+      {k:'签字影像预览', v:function(t){ return hasImg(t, '人脸识别') ? '签字确认单 + 人脸识别影像' : ''; },
+       ent:function(t){ return hasImg(t, '人脸识别') ? {t:'预览', a:'签字确认单 + 人脸识别影像'} : null; }}
+    ],
+    /* 审核不通过（复核未通过、任务流转「待对方回传资料」） */
+    signedWaitFail: [
+      {k:'不通过原因', core:1, v:function(t){ return t.reason || '影像资料与保单信息不一致'; }},
+      {k:'审核意见', core:1, v:function(t){ return t.auditOpinion || '影像资料与系统信息不一致，需按不通过原因补充资料后重新复核'; }},
+      {k:'审核人', core:1, v:function(){ return AUDITOR.name + '（工号 ' + AUDITOR.no + '）'; }},
+      {k:'审核时间', core:1, v:function(t){ return (t.times && t.times.second) || ''; }},
+      {k:'整改项清单', core:1, v:function(t){ return t.fixList || '按驳回原因整改对应影像 / 证明材料，整改完成后重新发起申请'; }},
+      {k:'是否支持重提', core:1, v:function(t){ return t.reapply || '不支持补件续办：审核不通过为终态，需按驳回原因整改后由对方重新发起保全变更申请'; }}
+    ],
+    fileWait: [
+      {k:'需补充资料清单', core:1, v:function(t){ return t.suppList || t.reason || '按审核不通过原因补齐对应资料'; }},
+      {k:'资料要求说明', core:1, v:'按缺件说明补传，影像需清晰完整、与确认单信息一致'},
+      {k:'最晚回传时限', core:1, v:function(t){ return t.suppDeadline || '自复核不通过之日起 7 个自然日内回传'; }},
+      {k:'资料上传', core:1, v:'芯银保上传影像系统受理单下，成功后复制到子任务号',
+       ent:function(){ return {t:'上传', a:'补充资料上传', up:1}; }}
+    ],
+    recheck: [
+      {k:'补件上传时间', v:function(t){ return t.suppDate || ''; }},
+      {k:'上传资料预览', v:function(t){ return hasImg(t, '补充资料') ? '对方补充资料影像' : ''; },
+       ent:function(t){ return hasImg(t, '补充资料') ? {t:'预览', a:'对方补充资料影像'} : null; }},
+      {k:'资料接收状态', v:'已接收 · 已复制到受理单下全部子任务'},
+      {k:'复核处理人', v:function(){ return AUDITOR.name + '（工号 ' + AUDITOR.no + ' · ' + AUDITOR.tel + '）'; }}
+    ],
+    done: [
+      {k:'办结时间', v:function(t){ return (t.times && t.times.file) || lastTime(t); }},
+      {k:'保全批单编号', v:function(t){ return t.id; }},
+      {k:'批单预览', v:function(t){ return hasImg(t, '电子批单') ? pidianDocName(t.name) : ''; },
+       ent:function(t){ return hasImg(t, '电子批单') ? {t:'预览', a:pidianDocName(t.name)} : null; }},
+      {k:'保单生效时间', v:function(t){
+        if (t.effDate) return t.effDate;
+        var ft = (t.times && t.times.file) || '';
+        return ft ? (ft.slice(0, 10) + ' 00:00 生效') : '';
+      }}
+    ]
+  };
+  function ndFieldRow(f, task, core){
+    var val = (typeof f.v === 'function') ? f.v(task) : f.v;
+    var ent = (typeof f.ent === 'function') ? f.ent(task) : f.ent;
+    if ((val === '' || val == null) && !ent) return '';
+    return '<div class="nd-row"><span class="k">' + f.k + '</span>' +
+           '<span class="v">' + (val || '') + '</span>' + entHTML(ent) + '</div>';
+  }
+  /* 节点专属字段渲染：核心卡点字段单独成块并置顶（reviewFail 复用 signedWaitFail 字段组） */
+  function nodeFieldsHTML(sk, task, failed){
+    var list = ((sk === 'signedWait' && failed) || sk === 'reviewFail') ? NODE_FIELDS.signedWaitFail : NODE_FIELDS[sk];
+    if (!list) return '';
+    var coreRows = '', normRows = '';
+    list.forEach(function(f){
+      var row = ndFieldRow(f, task, f.core);
+      if (!row) return;
+      if (f.core) coreRows += row; else normRows += row;
+    });
+    var html = '';
+    if (coreRows){
+      html += '<div class="nd-core"><div class="hd"><span class="badge">核心卡点</span>' +
+              '<span class="tx">' + (failed ? '审核不通过' : (STATUS[sk] ? STATUS[sk].n : '')) + ' · 定位卡点先看这里</span></div>' +
+              coreRows + '</div>';
+    }
+    if (normRows){
+      html += '<span class="nd-t">节点专属字段</span><div class="nd-flds">' + normRows + '</div>';
+    }
+    return html;
+  }
+
+  function apiStateOf(k, task){
+    var s = task.status;
+    if (k === 'apply')  return 'ok';
+    if (k === 'image')  return (s === 'init') ? 'running' : 'ok';
+    if (k === 'first')  return (s === 'init') ? 'pending' : ((s === 'applyFail') ? 'fail' : 'ok');
+    /* 确认书打印：行方下载打印节点为待打印，之前未触发，之后已完成 */
+    if (k === 'print')  return (s === 'init' || s === 'applyFail') ? 'pending' : ((s === 'printWait') ? 'wait' : 'ok');
+    if (k === 'sign')   return (s === 'signWait') ? 'wait' : ((s === 'canceled') ? 'fail'
+                          : ((['signedWait','fileWait','recheck','reviewFail','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
+    /* 复核结果：待复核=处理中；材料不全 / 补件后复核 / 完成=已回传结论；审核不通过=失败 */
+    if (k === 'second') return (s === 'signedWait') ? 'running' : ((s === 'reviewFail') ? 'fail'
+                          : ((['fileWait','recheck','done'].indexOf(s) > -1) ? 'ok' : 'pending'));
+    if (k === 'file')   return (s === 'done') ? 'ok' : 'pending';
+    if (k === 'cancel') return (s === 'canceled') ? 'ok' : 'pending';
+    return 'pending';
+  }
+  /* ==========================================================
+     四、数据
+     ========================================================== */
+  /* 「待客户签字」文案固定展示「已等待 N 天」，故各状态给一个合理的演示等待天数 */
+  var WAIT_DAYS_DEFAULT = {printWait:2, signWait:18, signedWait:12, fileWait:12, recheck:12, reviewFail:9, done:12, canceled:183};
+  function T(id, name, status, opt){
+    var t = {id:id, name:name, status:status, dates:[], times:{}, images:null, reason:'', audit:['—','—'],
+             waitDays:(WAIT_DAYS_DEFAULT[status] || 0)};
+    if (opt) for (var k in opt) t[k] = opt[k];
+    return t;
+  }
+
+  var POLICIES = {
+    'SH20250920001866': {
+      no:'SH20250920001866', mode:'2.0 投保人变更', product:'太保鑫福利（A款）两全保险（分红型）', holder:'张**', insured:'李**（未成年）',
+      acceptNo:'2120250920001', way:'代办', trustName:'招银国际信托有限公司',
+      /* 受理单号 2120250920001 下三笔子任务：数组顺序故意把「待生成」的两笔排在前面，
+         用于验证 S2 渲染时「待生成」会被排到其余子任务之后 */
+      tasks:[
+        T('8320250920002','生存金受益人变更','init',{
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33'},
+          dates:['2025-09-18 09:40','','','']}),
+        T('8320250920003','投保人变更','signedWait',{
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18', sign:'2025-09-22 10:12:44'},
+          dates:['2025-09-18 09:40','2025-09-20 14:30','2025-09-22 10:12','']}),
+        T('8320250920001','身故受益人变更','signWait',{waitDays:18,
+          reason:'客户尚未完成对方确认单签署',
+          times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'},
+          dates:['2025-09-18 09:40','2025-09-20 14:30','','']})
+      ]
+    },
+    /* 同一受理单号 2120250920001 下挂两张保单（同一客户张**），演示「一受理单号 → 多保单号」 */
+    'SH20250920001867': {
+      no:'SH20250920001867', mode:'1.0 身故受益人变更', product:'太保鑫相伴（A款）年金保险（分红型）', holder:'张**', insured:'张**（成年）',
+      acceptNo:'2120250920001', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[ T('8320250920004','身故受益人变更','signWait',{waitDays:18,
+        reason:'客户尚未完成对方确认单签署',
+        times:{apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'},
+        dates:['2025-09-18 09:40','2025-09-20 14:30','','']}) ]
+    },
+    'SH20250916000442': {
+      no:'SH20250916000442', mode:'1.5 指定第二投保人', product:'太保鑫从容（B款）两全保险（分红型）', holder:'王**', insured:'王**（成年）',
+      afters:{'指定第二投保人变更':'周**'},
+      acceptNo:'2120250916007', way:'亲办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        /* 路径 ③ 进行中：复核发现材料不全 → 待对方回传资料 */
+        T('8320250916001','指定第二投保人变更','fileWait',{
+          reason:'第二投保人与被保险人关系证明不清晰',
+          suppList:'① 第二投保人与被保险人关系证明 ② 第二投保人证件影像正反面',
+          suppDeadline:'2025-09-26 18:00',
+          times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']}),
+        T('8320250916002','身故受益人变更','fileWait',{
+          reason:'身故受益人身份证明不清晰',
+          suppList:'① 身故受益人身份证明（清晰扫描件）② 受益人与被保人关系证明',
+          suppDeadline:'2025-09-26 18:00',
+          times:{apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'},
+          dates:['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']}) ]
+    },
+    /* 路径 ③ 办结：发起 → 签字 → 复核发现材料不全 → 待对方回传资料 → 补全后复核 → 完成 */
+    'SH20250912000918': {
+      no:'SH20250912000918', mode:'1.0 身故受益人变更', product:'太保相伴一生年金保险（分红型）', holder:'赵**', insured:'赵**（成年）',
+      acceptNo:'2120250912003', way:'亲办', trustName:'平安信托有限责任公司',
+      tasks:[ T('8320250912001','身故受益人变更','done',{
+        reason:'监护关系证明不清晰',
+        suppList:'① 监护关系证明（清晰扫描件）② 监护人证件影像正反面',
+        suppDate:'2025-09-14 10:22:16', reDate:'2025-09-15 09:40:02',
+        times:{apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02',
+               first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-13 16:48:20', file:'2025-09-15 15:26:09'},
+        dates:['2025-09-12 14:03','2025-09-13 10:16','2025-09-13 16:48','2025-09-15 15:26']}) ]
+    },
+    'SH20250908000731': {
+      no:'SH20250908000731', mode:'2.0 投保人变更', product:'太保鑫福临门（C款）两全保险（分红型）', holder:'孙**', insured:'孙**（未成年）',
+      acceptNo:'2120250908002', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[
+        T('8320250908001','投保人变更','applyFail',{
+          reason:'客户信息属于反洗钱监控名单（以实际接口返回内容为准）',
+          failCode:'PBFTISF2X3 · resultCode=1002（反洗钱名单命中）',
+          times:{apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'},
+          dates:['2025-09-08 11:04','','',''],
+          failDate:'2025-09-09 10:18'}),
+        T('8320250908002','身故受益人变更','applyFail',{
+          reason:'客户信息属于反洗钱监控名单（以实际接口返回内容为准）',
+          failCode:'PBFTISF2X3 · resultCode=1002（反洗钱名单命中）',
+          times:{apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'},
+          dates:['2025-09-08 11:04','','',''],
+          failDate:'2025-09-09 10:18'}) ]
+    },
+    'SH20250905000319': {
+      no:'SH20250905000319', mode:'1.5 指定第二投保人', product:'太保金诺优享终身寿险（分红型）', holder:'周**', insured:'周**（未成年）',
+      afters:{'指定第二投保人变更':'褚**'},
+      acceptNo:'2120250905006', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250905001','指定第二投保人变更','signWait',{waitDays:9,
+          reason:'客户尚未完成对方确认单签署',
+          times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
+          dates:['2025-09-05 09:22','2025-09-05 16:40','','']}),
+        /* 确认书下发失败：卡在「行方确认书打印」节点（保司已生成 486，未收到行方接收回执） */
+        T('8320250905002','身故受益人变更','printWait',{waitDays:2, signPush:'fail',
+          reason:'对方确认书下发失败，行方无法下载打印，需排查推送链路后重新推送',
+          times:{apply:'2025-09-05 09:22:04', image:'2025-09-05 09:23:47', first:'2025-09-05 16:40:20'},
+          dates:['2025-09-05 09:22','2025-09-05 16:40','','']}) ]
+    },
+    /* 路径 ③ 进行中：对方已回传补充资料 → 等待保司再次复核 */
+    'SH20250901000256': {
+      no:'SH20250901000256', mode:'2.0 投保人变更', product:'太保长相伴（庆典版）终身寿险（分红型）', holder:'郑**', insured:'郑**（未成年）',
+      acceptNo:'2120250901005', way:'代办', trustName:'招银国际信托有限公司',
+      tasks:[
+        T('8320250901001','投保人变更','recheck',{
+          reason:'签字影像不清晰，不满足复核要求',
+          suppList:'① 客户签字确认单（清晰扫描件）② 客户证件影像正反面',
+          suppDate:'2025-09-04 17:05:12', reDate:'2025-09-05 09:30:08',
+          times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
+                 first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']}),
+        T('8320250901002','身故受益人变更','recheck',{
+          reason:'签字影像不清晰，不满足复核要求',
+          suppList:'① 客户签字确认单（清晰扫描件）② 客户证件影像正反面',
+          suppDate:'2025-09-04 17:05:12', reDate:'2025-09-05 09:30:08',
+          times:{apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02',
+                 first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'},
+          dates:['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']}) ]
+    },
+    /* 路径 ⑤：复核不通过 → 终态（驳回原因回传对方，任务终止，后面没有节点） */
+    'SH20250918000612': {
+      no:'SH20250918000612', mode:'1.5 指定第二投保人', product:'太保鑫从容（D款）两全保险（分红型）', holder:'冯**', insured:'冯**（未成年）',
+      afters:{'指定第二投保人变更':'许**'},
+      acceptNo:'2120250918008', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250918001','指定第二投保人变更','reviewFail',{
+          reason:'第二投保人与被保险人关系证明缺失，且影像与系统信息不一致',
+          auditOpinion:'资料与系统登记信息不一致，驳回处理；请整改后重新发起保全变更申请',
+          times:{apply:'2025-09-18 09:15:22', image:'2025-09-18 09:16:40', first:'2025-09-18 15:20:11', sign:'2025-09-19 10:05:33', second:'2025-09-20 16:12:07'},
+          dates:['2025-09-18 09:15','2025-09-18 15:20','2025-09-19 10:05','']}),
+        T('8320250918002','身故受益人变更','reviewFail',{
+          reason:'身故受益人身份证明缺失，且影像与系统信息不一致',
+          auditOpinion:'资料与系统登记信息不一致，驳回处理；请整改后重新发起保全变更申请',
+          times:{apply:'2025-09-18 09:15:22', image:'2025-09-18 09:16:40', first:'2025-09-18 15:20:11', sign:'2025-09-19 10:05:33', second:'2025-09-20 16:12:07'},
+          dates:['2025-09-18 09:15','2025-09-18 15:20','2025-09-19 10:05','']}) ]
+    },
+    'SH20250928000104': {
+      no:'SH20250928000104', mode:'1.0 身故受益人变更', product:'太保鑫福利（B款）两全保险（分红型）', holder:'吴**', insured:'吴**（成年）',
+      acceptNo:'2120250928009', way:'亲办', trustName:'平安信托有限责任公司',
+      tasks:[
+        T('8320250928001','身故受益人变更','done',{
+          times:{apply:'2025-09-26 13:42:18', image:'2025-09-26 13:44:05',
+                 first:'2025-09-26 17:10:33', sign:'2025-09-27 10:02:19', second:'2025-09-28 16:22:47', file:'2025-09-28 16:28:12'},
+          dates:['2025-09-26 13:42','2025-09-27 10:02','2025-09-28 16:22','2025-09-28 16:28']}),
+        /* 演示「优先级最高的任务办结后，其余子任务节点状态同步更新」 */
+        T('8320250928002','生存金受益人变更','pending',{})
+      ]
+    },
+    'SH20250815000220': {
+      no:'SH20250815000220', mode:'1.5 指定第二投保人', product:'太保鑫从容（C款）两全保险（分红型）', holder:'陈**', insured:'陈**（未成年）',
+      afters:{'指定第二投保人变更':'杨**'},
+      acceptNo:'2120250815004', way:'代办', trustName:'华宝信托有限责任公司',
+      tasks:[
+        T('8320250815001','指定第二投保人变更','canceled',{
+          reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
+          cancelType:'超时自动撤销', cancelBy:'系统自动（签字超 180 天未回传触发）',
+          waitDays:183, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-03-10 10:12:04', image:'2025-03-10 10:13:51',
+                 first:'2025-03-10 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-03-10 10:12','2025-03-10 16:42','','']}),
+        T('8320250815002','身故受益人变更','canceled',{
+          reason:'超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）',
+          cancelType:'超时自动撤销', cancelBy:'系统自动（签字超 180 天未回传触发）',
+          waitDays:183, cancelTime:'2025-09-15 00:05',
+          times:{apply:'2025-03-10 10:12:04', image:'2025-03-10 10:13:51',
+                 first:'2025-03-10 16:42:09', cancel:'2025-09-15 00:05:00'},
+          dates:['2025-03-10 10:12','2025-03-10 16:42','','']}) ]
+    }
+  };
+
+  /* 代销渠道：保单维度维护 —— 同一受理单号下的不同保单，代销渠道可以不同 */
+  var CHANNEL_OF = {
+    'SH20250920001866':'招行上海分行',
+    'SH20250920001867':'太保寿险经代',
+    'SH20250916000442':'招行深圳分行',
+    'SH20250912000918':'招行北京分行',
+    'SH20250908000731':'太保寿险经代',
+    'SH20250905000319':'招行杭州分行',
+    'SH20250901000256':'招行上海分行',
+    'SH20250918000612':'招行广州分行',
+    'SH20250928000104':'招行南京分行',
+    'SH20250815000220':'太保寿险经代'
+  };
+  Object.keys(POLICIES).forEach(function(k){
+    if (!POLICIES[k].channel) POLICIES[k].channel = CHANNEL_OF[k] || '招行上海分行';
+  });
+
+  /* ==========================================================
+     演示数据升位：主链路新增「行方确认书打印」节点后，dates 由 4 段扩为 5 段
+     [对方发起申请, 行方确认书打印, 待客户签字, 客户已签字待复核, 完成]
+     历史 4 段数据按语义补位，并补出确认书打印时间（确认书下发后 3 分钟完成打印）
+     ========================================================== */
+  function plusMin(ts, m){
+    if (!ts) return '';
+    var d = new Date(String(ts).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return '';
+    d.setMinutes(d.getMinutes() + m);
+    function p(n){ return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  var NOT_PRINTED = {init:1, applyFail:1, printWait:1};   /* 尚未走到确认书打印的状态 */
+  Object.keys(POLICIES).forEach(function(pk){
+    (POLICIES[pk].tasks || []).forEach(function(t){
+      var tm = t.times || {};
+      if (tm.first && !tm.print && t.signPush !== 'fail') tm.print = plusMin(tm.first, 3);
+      var d = t.dates || [];
+      if (!d.length || d.length >= 5) return;
+      var done = (t.status === 'done');
+      function cut(v){ return v ? String(v).slice(0, 16) : ''; }
+      t.dates = [
+        d[0] || cut(tm.apply),
+        cut(tm.first),
+        NOT_PRINTED[t.status] ? '' : cut(tm.print),
+        done ? (cut(tm.sign) || d[1] || '') : (cut(tm.sign) || d[2] || ''),
+        done ? (cut(tm.file) || d[3] || '') : (d[3] || '')
+      ];
+    });
+  });
+
+  /* 状态演示保单：8 种状态各一笔 */
+  (function(){
+    var demo = { no:'DEMO-STATUS-0001', mode:'2.0 投保人变更', holder:'演示**', insured:'演示**（未成年）',
+      acceptNo:'21202509000001', way:'代办', trustName:'招银国际信托有限公司', channel:'招行上海分行', tasks:[],
+      afters:{'指定第二投保人变更':'何**'} };
+    var names = ['身故受益人变更','生存金受益人变更','投保人变更','指定第二投保人变更'];
+    ST_KEYS.forEach(function(k, i){
+      var id = '83202509000' + (i + 1);
+      /* 每笔状态独占一个受理单号：业务优先级规则下，同受理单号只有优先级最高的任务展示真实状态 */
+      var acc = '2120250900000' + (i + 1);
+      var t = T(id, names[i % 4], k, {
+        accept:acc,
+        waitDays:(k === 'signWait' ? 18 : (k === 'printWait' ? 2 : (k === 'canceled' ? 183 : 12))),
+        cancelTime:'2025-09-15 00:05'
+      });
+      if (k === 'init'){ t.times = {apply:'2025-09-28 16:40:02', image:'2025-09-28 16:41:20'}; t.dates = ['2025-09-28 16:40','','','']; }
+      if (k === 'applyFail'){ t.reason = '客户信息属于反洗钱监控名单（以实际接口返回内容为准）'; t.failCode = 'PBFTISF2X3 · resultCode=1002（反洗钱名单命中）'; t.times = {apply:'2025-09-08 11:04:12', image:'2025-09-08 11:05:36'}; t.dates = ['2025-09-08 11:04','','','']; t.failDate = '2025-09-09 10:18'; }
+      if (k === 'printWait'){ t.reason = '行方尚未下载确认书，等待打印后交客户签署'; t.times = {apply:'2025-09-19 09:40:05', image:'2025-09-19 09:41:33', first:'2025-09-19 14:30:18'}; t.dates = ['2025-09-19 09:40','','','']; }
+      if (k === 'signWait'){ t.times = {apply:'2025-09-18 09:40:05', image:'2025-09-18 09:41:33', first:'2025-09-20 14:30:18'}; t.dates = ['2025-09-18 09:40','2025-09-20 14:30','','']; }
+      if (k === 'canceled'){ t.reason = '超过180天客户签字未回传，任务自动撤销（以实际接口返回内容为准）'; t.cancelType = '超时自动撤销'; t.cancelBy = '系统自动（签字超 180 天未回传触发）'; t.times = {apply:'2025-03-15 10:12:04', image:'2025-03-15 10:13:51', first:'2025-03-15 16:42:09', cancel:'2025-09-15 00:05:00'}; t.dates = ['2025-03-15 10:12','2025-03-15 16:42','','']; }
+      if (k === 'signedWait'){ t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
+      if (k === 'fileWait'){ t.reason = '监护关系证明不清晰'; t.suppList = '① 监护关系证明（清晰扫描件，需体现监护人与被保人关系）② 监护人证件影像正反面'; t.suppDeadline = '2025-09-26 18:00'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
+      if (k === 'recheck'){ t.reason = '签字影像不清晰'; t.suppList = '① 客户签字确认单（清晰扫描件）② 客户证件影像正反面'; t.times = {apply:'2025-09-01 10:07:33', image:'2025-09-01 10:09:02', first:'2025-09-01 16:30:18', sign:'2025-09-03 09:18:44', second:'2025-09-04 17:02:51'}; t.dates = ['2025-09-01 10:07','2025-09-01 16:30','2025-09-03 09:18','']; t.suppDate = '2025-09-04 17:05'; t.reDate = '2025-09-05 09:30'; }
+      if (k === 'reviewFail'){ t.reason = '签字影像不清晰，不满足复核要求'; t.times = {apply:'2025-09-16 10:12:41', image:'2025-09-16 10:14:07', first:'2025-09-16 16:40:22', sign:'2025-09-18 09:25:11', second:'2025-09-19 15:02:36'}; t.dates = ['2025-09-16 10:12','2025-09-16 16:40','2025-09-18 09:25','']; }
+      if (k === 'done'){ t.times = {apply:'2025-09-12 14:03:48', image:'2025-09-12 14:05:02', first:'2025-09-12 17:22:30', sign:'2025-09-13 10:16:44', second:'2025-09-15 15:20:44', file:'2025-09-15 15:26:09'}; t.dates = ['2025-09-12 14:03','2025-09-13 10:16','2025-09-15 15:20','2025-09-15 15:26']; }
+      demo.tasks.push(t);
+    });
+    POLICIES['DEMO-STATUS-0001'] = demo;
+  })();
+
+  var curPolicy = POLICIES['SH20250920001866'], curTask = 0;
+
+  /* ==========================================================
+     五、通用渲染工具
+     ========================================================== */
+  function statusTag(k){ var s = STATUS[k]; return '<span class="tag ' + s.tc + '">' + s.n + '</span>'; }
+  function imagesOf(task){
+    if (task.images) return task.images;
+    var s = task.status;
+    var base = [[1,'保全服务受理单（485）'],[1,'投保人证件影像'],[1,'被保险人证件影像']];
+    if (s === 'pending') return [[0,'本任务节点未生成，影像待随优先级更高的任务同步生成']];
+    if (s === 'init') return [[0,'保全服务受理单（485）· 生成中'],[0,'证件影像 · 待上传']];
+    if (s === 'applyFail') return base;
+    if (s === 'printWait') return base.concat([[1,'对方确认单（486）· 待行方打印']]);
+    if (s === 'signWait') return base.concat([[1,'对方确认单（486）· 待客户签署']]);
+    if (s === 'canceled') return base.concat([[1,'对方确认单（486）· 未签署']]);
+    var mid = [[1,'对方确认单（486）· 已签署'],[1,'人脸识别影像']];
+    if (s === 'signedWait' || s === 'reviewFail') return base.concat(mid);
+    if (s === 'fileWait') return base.concat(mid, [[0,'补充资料 · 待对方回传']]);
+    if (s === 'recheck')  return base.concat(mid, [[1,'补充资料 · 已回传']]);
+    /* 走补件链路办结的，影像清单含补充资料 */
+    if (s === 'done' && (task.suppDate || task.reDate)) return base.concat(mid, [[1,'补充资料 · 已回传'],[1,'电子批单 · 已生成']]);
+    return base.concat(mid, [[1,'电子批单 · 已生成']]);
+  }
+
+  /* ==========================================================
+     七、S2 渲染
+     ========================================================== */
+  var taskList = document.getElementById('taskList');
+  var fltBar = document.getElementById('fltBar');
+  var openTask = -1;   /* 当前就地展开节点信息的子任务下标，-1 = 全部收起 */
+  var acceptFilter = '';   /* 由受理单号进入时，仅展示该受理单号下的子任务 */
+  var showAll = false;     /* 用户点过「查看全部」：本次会话展示本保单全部受理单 */
+  /* 代销渠道：保单维度（同一受理单号下的不同保单，代销渠道可以不同） */
+  function channelOf(no){
+    var p = POLICIES[no];
+    return (p && p.channel) || CHANNEL_OF[no] || '—';
+  }
+  /* 多张保单的代销渠道：去重后并列（不同保单渠道可能不同） */
+  function channelListOf(nos){
+    var out = [];
+    (nos || []).forEach(function(n){
+      var c = channelOf(n);
+      if (c && c !== '—' && out.indexOf(c) < 0) out.push(c);
+    });
+    return out.length ? out : ['—'];
+  }
+  /* 信托公司：同一批保单为同一家，取该受理单号下第一张有效保单的值 */
+  function trustNameOf(nos){
+    var list = nos || [];
+    for (var i = 0; i < list.length; i++){
+      var p = POLICIES[list[i]];
+      if (p && p.trustName) return p.trustName;
+    }
+    return '—';
+  }
+  /* 一个受理单号可对应多张保单：按受理单号聚合出全部保单号（当前保单排第一） */
+  function policyNosOfAccept(acc){
+    var p = curPolicy, list = [p.no];
+    if (!acc) return list;
+    Object.keys(POLICIES).forEach(function(k){
+      if (k === p.no) return;
+      var q = POLICIES[k];
+      var hit = (q.acceptNo === acc) || (q.tasks || []).some(function(t){ return t.accept === acc; });
+      if (hit && list.indexOf(k) === -1) list.push(k);
+    });
+    return list;
+  }
+  /* 保单号渲染：单张按原样，多张改为纵向罗列 */
+  function renderPolicyNo(el, acc, cls){
+    var base = cls || 'ov-no';
+    var nos = policyNosOfAccept(acc);
+    if (nos.length > 1){
+      el.className = base + ' multi';
+      el.innerHTML = nos.map(function(n){ return '<span class="pn">' + n + '</span>'; }).join('');
+    } else {
+      el.className = base;
+      el.textContent = nos[0];
+    }
+  }
+  function renderPolicy(){
+    var p = curPolicy;
+
+    /* 按受理单号分组（同一受理单下可有多笔子任务） */
+    var groups = [], gmap = {};
+    p.tasks.forEach(function(t, i){
+      var acc = t.accept || p.acceptNo;
+      if (!gmap[acc]){ gmap[acc] = {no:acc, items:[]}; groups.push(gmap[acc]); }
+      gmap[acc].items.push({t:t, i:i});
+    });
+    /* 默认只展示一个受理单号（受理单号查询 → 该单；保单号查询 → 保单主受理单），其余收进「查看全部」 */
+    var multi = groups.length > 1;
+    if (multi && !showAll){
+      var one = acceptFilter ? groups.filter(function(g){ return g.no === acceptFilter; }) : [];
+      groups = one.length ? one : [groups[0]];
+    }
+    /* 提示 + 一键看全部 */
+    if (multi && !showAll && groups.length === 1){
+      fltBar.style.display = 'flex';
+      var g0No = groups[0].items.some(function(it){ return effView(p, it.i).status === 'applyFail'; }) ? '-' : groups[0].no;
+      fltBar.innerHTML = '<span class="t">仅显示受理单号 ' + g0No + '</span>' +
+                         '<span class="lk">查看全部 ›</span>';
+      fltBar.querySelector('.lk').addEventListener('click', function(){
+        showAll = true; openTask = -1; renderPolicy(); showToast('已显示本保单全部受理单');
+      });
+    } else {
+      fltBar.style.display = 'none';
+      fltBar.innerHTML = '';
+    }
+    /* 保单信息：保单号按当前展示的受理单号聚合（一个受理单号可挂多张保单） */
+    /* 排序：「待生成」的子任务排在其余子任务之后；其余按业务优先级排列
+       （身故受益人变更 → 生存金受益人变更 → 投保人变更 → 指定第二投保人变更） */
+    groups.forEach(function(g){
+      g.items.sort(function(a, b){
+        var pa = effView(p, a.i).status === 'pending' ? 1 : 0;
+        var pb = effView(p, b.i).status === 'pending' ? 1 : 0;
+        if (pa !== pb) return pa - pb;
+        return bizPriority(a.t.name) - bizPriority(b.t.name);
+      });
+    });
+    taskList.innerHTML = groups.map(function(g){
+      /* 受理单号行：第二行展示该受理单号下的保单号（一个受理单号可挂多张保单，纵向罗列），
+         每个保单号后跟该保单的代销渠道（不同保单渠道可不同）；第三行信托公司（整单同一家） */
+      var nos = policyNosOfAccept(g.no);
+      var polLine = nos.length
+        ? '<span class="pol"><span class="pk">保单号 / 代销渠道</span><span class="pv">' +
+            nos.map(function(n){
+              return '<span class="prow"><span class="pn">' + n + '</span>' +
+                     '<span class="ch">' + channelOf(n) + '</span></span>';
+            }).join('') +
+          '</span></span>'
+        : '';
+      var trustLine =
+        '<span class="pol"><span class="pk">信托公司</span><span class="pv">' +
+          '<span class="tr">' + trustNameOf(nos) + '</span>' +
+        '</span></span>';
+      /* 申请失败：受理单号尚未生成 → 展示为「-」 */
+      var accNo = g.items.some(function(it){ return effView(p, it.i).status === 'applyFail'; }) ? '-' : g.no;
+      var head =
+        '<div class="agroup-head">' +
+          '<span class="l"><span class="no">受理单号 ' + accNo + '</span>' + polLine + trustLine + '</span>' +
+        '</div>';
+      var cards = g.items.map(function(it){
+        var i = it.i, tv = effView(p, i);   /* 业务优先级：非最高优先级任务按「待生成 / 同步」展示 */
+        var st = tv.status;
+        var s = STATUS[st];
+        var cls = (s.mode === 'fail' && s.mode !== 'cancel') ? 'hot' : ((s.mode === 'done') ? 'done' : ((s.cat === 'wait' && s.mode !== 'cancel') ? 'hot' : (s.mode === 'cancel' ? '' : 'run')));
+        var open = (i === openTask);
+        var note = (st === 'pending')
+          ? '<div class="pend-note">本任务待生成 · 待同受理单号下优先级更高的「' + tv.topName + '」办结后同步更新</div>'
+          : (tv.synced ? '<div class="pend-note">节点状态已随优先级更高的「' + tv.topName + '」同步更新</div>' : '');
+        return '<div class="tcardwrap">' +
+          '<div class="tcard ' + cls + (open ? ' open' : '') + '" data-i="' + i + '">' +
+          '<span class="l"><span class="n">' + tv.name + '</span>' +
+          /* 申请失败：子任务号尚未生成 → 展示为「-」 */
+          '<span class="m">子任务号 ' + (st === 'applyFail' ? '-' : tv.id) + '</span></span>' +
+          '<span class="r"><span style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">' + statusTag(st) +
+          '<span class="arw">›</span></span></span></div>' +
+          '<div class="tpanel' + (open ? ' open' : '') + '" data-panel="' + i + '">' +
+            '<div class="timeline">' + note + timelineNodesHTML(tv) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      return '<div class="agroup">' + head + cards + '</div>';
+    }).join('');
+    /* 面板内的节点「详情」同样可弹卡点定位 */
+    bindTimelineDetail(taskList);
+  }
+  taskList.addEventListener('click', function(e){
+    var c = e.target.closest('.tcard'); if (!c) return;
+    toggleTaskCard(c);
+  });
+  /* 进入「保单任务流程」时默认就地展开第一个子任务（排序后列在最上面的那张卡），
+     让用户一进来就能看到节点进度；不带平滑滚动，避免刚进页面就跳动 */
+  function openFirstTaskPanel(){
+    if (openTask >= 0) return;                     /* 已有展开的面板则不打扰 */
+    var first = taskList.querySelector('.tcard');
+    if (!first) return;
+    var i = parseInt(first.getAttribute('data-i'), 10);
+    var panel = first.parentNode.querySelector('.tpanel');
+    if (!panel) return;
+    Array.prototype.forEach.call(taskList.querySelectorAll('.tpanel.open'), function(el){ el.classList.remove('open'); });
+    Array.prototype.forEach.call(taskList.querySelectorAll('.tcard.open'), function(el){ el.classList.remove('open'); });
+    panel.classList.add('open');
+    first.classList.add('open');
+    openTask = i;
+    selectTask(i);                                  /* 同步上下文，弹层接口详情取到正确子任务 */
+  }
+  /* 点击子任务卡片：就地展开 / 收起节点信息（同层互斥，只保留一张展开） */
+  function toggleTaskCard(card){
+    var i = parseInt(card.getAttribute('data-i'), 10);
+    var wrap = card.parentNode;
+    var panel = wrap.querySelector('.tpanel');
+    var opening = !panel.classList.contains('open');
+    Array.prototype.forEach.call(taskList.querySelectorAll('.tpanel.open'), function(el){ el.classList.remove('open'); });
+    Array.prototype.forEach.call(taskList.querySelectorAll('.tcard.open'), function(el){ el.classList.remove('open'); });
+    if (opening){
+      panel.classList.add('open');
+      card.classList.add('open');
+      openTask = i;
+      selectTask(i);                     /* 同步上下文，弹层接口详情取到正确子任务 */
+      setTimeout(function(){ wrap.scrollIntoView({behavior:'smooth', block:'nearest'}); }, 80);
+    } else {
+      panel.classList.remove('open');
+      card.classList.remove('open');
+      openTask = -1;
+    }
+  }
+
+  /* ==========================================================
+     八、S3 渲染
+     ========================================================== */
+  var MAIN_KEYS = ['init','printWait','signWait','signedWait','done'];
+  function mkNodes(task){
+    var s = STATUS[task.status];
+    /* 待生成：节点尚未生成，4 个主节点全部灰显、无时间与详情 */
+    if (task.status === 'pending'){
+      return MAIN.map(function(n){
+        return {s:'todo', t:n.t, d:'', sk:'', detail:false, dkey:''};
+      });
+    }
+    function mainNode(idx, st){
+      var n = MAIN[idx];
+      return {s:st, t:n.t, d:(task.dates[idx] || ''), sk:MAIN_KEYS[idx], detail:(st !== 'todo'), dkey:(idx === 3 ? 'sign' : '')};
+    }
+    function branchNode(key, st){
+      var n = BRANCH[key];
+      /* 「待对方回传资料」缺件通知时间：无 suppDate 时回退到复核结果时间（times.second） */
+      var fallback = (task.times && task.times.second) ? task.times.second.slice(0, 16) : '';
+      var dt = (key === 'supp') ? (task.suppDate || fallback) : task.reDate;
+      return {s:st, t:n.t, d:(dt || ''), sk:(key === 'supp' ? 'fileWait' : 'recheck'), detail:(st !== 'todo'), dkey:key};
+    }
+    var spec = {
+      init:       [['current',0],['todo',1],['todo',2],['todo',3],['todo',4]],
+      applyFail:  [['done',0],['fail']],
+      printWait:  [['done',0],['current',1],['todo',2],['todo',3],['todo',4]],
+      signWait:   [['done',0],['done',1],['current',2],['todo',3],['todo',4]],
+      canceled:   [['done',0],['done',1],['done',2],['cancel']],
+      signedWait: [['done',0],['done',1],['done',2],['current',3],['todo',4]],
+      /* 复核发现材料不全 → 待对方回传资料 → 对方资料补全后复核 → 完成（路径 ③） */
+      fileWait:   [['done',0],['done',1],['done',2],['done',3],['current','supp'],['todo','re'],['todo',4]],
+      recheck:    [['done',0],['done',1],['done',2],['done',3],['done','supp'],['current','re'],['todo',4]],
+      /* 审核不通过：终态。保留「客户已签字待复核」节点，其后追加独立的「审核不通过」节点 */
+      reviewFail: [['done',0],['done',1],['done',2],['done',3],['rf']],
+      /* 走补件链路办结的，时间轴补出「待对方回传资料 / 对方资料补全后复核」两个节点 */
+      done:       (task.suppDate || task.reDate)
+                  ? [['done',0],['done',1],['done',2],['done',3],['done','supp'],['done','re'],['done',4]]
+                  : [['done',0],['done',1],['done',2],['done',3],['done',4]]
+    }[task.status] || [];
+    return spec.map(function(step){
+      var kind = step[0], ref = step[1];
+      if (kind === 'done' || kind === 'current' || kind === 'todo'){
+        return (typeof ref === 'number') ? mainNode(ref, kind) : branchNode(ref, kind);
+      }
+      if (kind === 'fail'){
+        /* 失败原因已在节点下方业务文案中展示，此处仅保留失败时间，避免重复 */
+        return {s:'fail', t:'申请失败', sk:'applyFail', detail:true, dkey:'', d:(task.failDate || '')};
+      }
+      if (kind === 'rf'){
+        /* 审核不通过（终态）：时间取复核结果时间 */
+        var rt = (task.times && task.times.second) ? task.times.second.slice(0, 16) : (task.dates[3] || '');
+        return {s:'fail', t:'审核不通过', sk:'reviewFail', detail:true, dkey:'', d:rt};
+      }
+      /* 撤销原因已在节点下方业务文案中展示，此处仅保留撤销时间，避免重复 */
+      return {s:'cancel', t:'已撤销', sk:'canceled', detail:true, dkey:'', d:(task.cancelTime || '')};
+    });
+  }
+  /* v5：全部状态节点开放「详情」下钻（含申请失败 / 待客户签字 / 已撤销 / 完成），
+     弹层统一为「节点详情 · 卡点定位」：卡点归属（行方 / 保司银保通·保全·营运中心）
+     + 接口调用链成功失败与返回码；审核类节点信息合并进同一弹层 */
+  var DETAIL_NODES = {init:1, applyFail:1, printWait:1, signWait:1, canceled:1, signedWait:1, fileWait:1, recheck:1, reviewFail:1, done:1};
+  /* 时间轴节点 HTML：S3 详情页与 S2 子任务折叠面板共用 */
+  function timelineNodesHTML(task){
+    var nodes = mkNodes(task);
+    return nodes.map(function(n, i){
+      var last = i === nodes.length - 1;
+      /* 审核不通过：独立终态节点（红点红字，文案红色） */
+      var failNode = (n.sk === 'reviewFail');
+      var lineCls = (n.s === 'done') ? '' : ' off';
+      var tCls = failNode ? ' fail' : ((n.s === 'current') ? ' cur' : ((n.s === 'fail') ? ' fail' : ((n.s === 'cancel') ? ' cancel' : ((n.s === 'todo') ? ' todo' : ''))));
+      var dCls = (n.s === 'current') ? ' cur' : '';
+      /* 节点下方信息：展示业务确认版节点文案；复核人员信息仅放在「详情」弹层，此处隐去 */
+      var hint = nodeCopyBrief(n.sk, task, failNode, n.s) || diagHint(n.sk, n.s, task);
+      /* 文案颜色统一为绿色；仅「审核不通过」节点保留红色以示异常 */
+      var hCls = failNode ? ' fail' : ' ok';
+      var showDetail = !!n.detail && !!DETAIL_NODES[n.sk];
+      return '<div class="tl-node">' +
+        '<div class="tl-col"><div class="tl-dot ' + n.s + '"></div>' +
+        (last ? '' : '<div class="tl-line' + lineCls + '"></div>') + '</div>' +
+        '<div class="tl-right"><span class="t' + tCls + '">' + n.t + '</span>' +
+        (n.d ? '<span class="d' + dCls + '">' + n.d + '</span>' : '') +
+        (n.detail ? '<span class="tl-hint' + hCls + '">' + hint + '</span>' : '') +
+        (n.detail ? chainHTML(n.sk, task, n.s, failNode) : '') +
+        (showDetail ? '<button class="tl-detail" data-node="' + n.sk + '" data-st="' + n.s + '">详情</button>' : '') +
+        '</div></div>';
+    }).join('');
+  }
+  function renderTimeline(){
+    var el = document.getElementById('timeline');
+    el.innerHTML = timelineNodesHTML(effView(curPolicy, curTask));
+    bindTimelineDetail(el);
+  }
+  /* 节点「详情」→ 节点详情 · 卡点定位弹层（作用域内任意容器均可绑定） */
+  function bindTimelineDetail(root){
+    var btns = (root || document).querySelectorAll('.tl-detail');
+    Array.prototype.forEach.call(btns, function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        openNodeDetail(btn.getAttribute('data-node'), btn.getAttribute('data-st'));
+      });
+    });
+  }
+
+  /* ==========================================================
+     八之二、节点详情 · 卡点定位弹层
+     ========================================================== */
+  var ndMask = document.getElementById('ndMask');
+  function closeNodeDetail(){ ndMask.classList.remove('show'); }
+  document.getElementById('ndClose').addEventListener('click', closeNodeDetail);
+  document.getElementById('ndOk').addEventListener('click', closeNodeDetail);
+  ndMask.addEventListener('click', function(e){ if (e.target === ndMask) closeNodeDetail(); });
+  /* 单据类在线预览 / 资料上传入口（无附件时该行不渲染，此处仅做原型演示） */
+  document.getElementById('ndBody').addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.nd-ent') : null;
+    if (!b) return;
+    e.stopPropagation();
+    showToast('原型演示：打开「' + b.getAttribute('data-prev') + '」');
+  });
+
+  /* 节点说明「详情」：展开完整文案（含复核人员信息） */
+  document.getElementById('ndBody').addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('.nd-copy-more') : null;
+    if (!b) return;
+    e.stopPropagation();
+    var box = b.parentNode, tx = box.querySelector('.tx');
+    if (tx) tx.textContent = b.getAttribute('data-full');
+    b.remove();
+  });
+
+  /* ==========================================================
+     八之三、一键报障浮窗（详情页右下角浮标）
+     报障上下文自动带出当前受理单号 / 子任务号 / 任务类型 / 节点
+     ========================================================== */
+  var fbMask = document.getElementById('fbMask');
+  var fbUploaded = false;
+  function fbTypeName(){
+    var on = document.querySelector('#fbType .chip.on');
+    return on ? on.textContent : '其他';
+  }
+  function openFb(){
+    var t = effView(curPolicy, curTask), s = STATUS[t.status] || {};
+    /* 申请失败：受理单号 / 子任务号均未生成 → 展示为「-」 */
+    var noGen = (t.status === 'applyFail');
+    document.getElementById('fbAcc').textContent = noGen ? '-' : (t.accept || curPolicy.acceptNo || '—');
+    document.getElementById('fbTask').textContent = noGen ? '-' : (t.id || '—');
+    document.getElementById('fbName').textContent = (t.name || '—');
+    document.getElementById('fbNode').textContent = (s.n || '—');
+    var fbNos = policyNosOfAccept(t.accept || curPolicy.acceptNo || '');
+    document.getElementById('fbTrust').textContent = trustNameOf(fbNos);
+    document.getElementById('fbChan').textContent = channelListOf(fbNos).join(' / ');
+    /* 问题描述给一版贴合当前节点的默认文案，用户可直接提交或改写 */
+    var ta = document.getElementById('fbDesc');
+    ta.value = (t.status === 'pending')
+      ? '「' + t.name + '」显示为「待生成」，与预期进度不一致，请协助核查。'
+      : '「' + t.name + '」停留在「' + (s.n || '—') + '」节点' +
+        (t.waitDays ? '（已等待 ' + t.waitDays + ' 天）' : '') + '，流程未按预期推进，请协助核查。';
+    fbMask.classList.add('show');
+  }
+  function closeFb(){ fbMask.classList.remove('show'); }
+  document.getElementById('fabHelp').addEventListener('click', openFb);
+  document.getElementById('fbClose').addEventListener('click', closeFb);
+  document.getElementById('fbCancel').addEventListener('click', closeFb);
+  fbMask.addEventListener('click', function(e){ if (e.target === fbMask) closeFb(); });
+  /* 问题类型：单选 */
+  document.getElementById('fbType').addEventListener('click', function(e){
+    var c = e.target && e.target.closest ? e.target.closest('.chip') : null;
+    if (!c) return;
+    var self = this;
+    Array.prototype.forEach.call(self.querySelectorAll('.chip'), function(x){ x.classList.remove('on'); });
+    c.classList.add('on');
+  });
+  /* 现场截图：原型演示，点一下即视为已上传 */
+  document.getElementById('fbUp').addEventListener('click', function(){
+    fbUploaded = !fbUploaded;
+    this.classList.toggle('done', fbUploaded);
+    this.textContent = fbUploaded ? '✓ 已上传 1 张（点击重新上传）' : '＋ 上传当前页面截图';
+  });
+  /* 提交：校验后关闭浮窗并回执工单号 */
+  document.getElementById('fbSubmit').addEventListener('click', function(){
+    var desc = (document.getElementById('fbDesc').value || '').trim();
+    var tel  = (document.getElementById('fbTel').value || '').trim();
+    if (!desc){ showToast('请补充问题描述'); return; }
+    if (!tel){ showToast('请填写联系电话'); return; }
+    var d = new Date();
+    var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+    var ticket = 'BZ' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes());
+    closeFb();
+    showToast('报障已提交（工单 ' + ticket + '），处理人将在 1 个工作日内联系您');
+  });
+
+  /* 接口行数据：弹层接口报文清单渲染（v5：含返回码 / 回执 rc） */
+  function ifaceInfo(task, it, done, failed){
+    var m = IFACE_META[it.k] || {code:'—', name:it.k, dir:'—'};
+    var st = (typeof it.st === 'function') ? it.st(task) : it.st;
+    var forced = done && !failed;   /* 复核不通过时按实际未通过态展示，不套用「已完成」文案 */
+    if (forced){ st = it.doneSt || ((st === 'run' || st === 'wait') ? 'ok' : st); }
+    var src = forced ? (it.doneNote || it.note) : it.note;
+    var rc  = (typeof it.rc === 'function') ? it.rc(task) : (it.rc || '');
+    if (forced && it.doneRc){ rc = (typeof it.doneRc === 'function') ? it.doneRc(task) : it.doneRc; }
+    /* 确认书下发失败：486 下发改为失败态与失败说明（行方无法下载打印） */
+    if (!done && it.k === 'img486' && task && task.signPush === 'fail'){
+      st = 'fail';
+      src = '行方确认书（影像 486）下发失败，未收到行方接收回执，行方无法下载打印，需排查下发链路后重新下发';
+      rc  = '下发失败 · 未收到行方接收回执';
+    }
+    return {m:m, st:st, stx:(IFACE_ST[st] || IFACE_ST.pend), time:timeOf(task, it.tk),
+            note:(typeof src === 'function') ? src(task) : src, rc:rc};
+  }
+  function ifaceRow(task, it, done, failed){
+    var f = ifaceInfo(task, it, done, failed), m = f.m, stx = f.stx, time = f.time, note = f.note;
+    var rcCls = (f.st === 'fail') ? 'fail' : ((f.st === 'ok') ? 'ok' : ((f.st === 'wait' || f.st === 'run') ? 'wait' : ''));
+    return '<div class="nd-iface">' +
+      '<div class="r1"><span class="nd-code">' + m.code + '</span>' +
+      '<span class="nm">' + m.name + '</span>' +
+      '<span class="nd-st ' + stx.cls + '">' + stx.n + '</span></div>' +
+      '<div class="nd-meta">' + m.dir + (time ? ' · ' + time : '') + '</div>' +
+      (note ? '<div class="nd-meta">' + note + '</div>' : '') +
+      (f.rc ? '<div class="nd-rc' + (rcCls ? ' ' + rcCls : '') + '">返回：' + f.rc + '</div>' : '') +
+    '</div>';
+  }
+  /* v5：时间轴节点内联接口链 —— 节点下方直接展示该节点涉及接口的调用成功 / 失败 */
+  function chainHTML(sk, task, st, failed){
+    var d = NODE_DIAG[sk];
+    if (!d || !d.ifaces) return '';
+    var done = (st === 'done');
+    return '<div class="tl-chain">' + d.ifaces.map(function(it){
+      var f = ifaceInfo(task, it, done, failed);
+      var cls = (f.st === 'fail') ? 'fail' : ((f.st === 'ok') ? 'ok' : ((f.st === 'wait' || f.st === 'run') ? 'wait' : 'pend'));
+      return '<span class="if ' + cls + '"><i></i>' + f.m.code + ' ' + f.stx.n + '</span>';
+    }).join('') + '</div>';
+  }
+  /* v5：接口链摘要（复制处理说明用） */
+  function ifaceChainText(t){
+    var d = NODE_DIAG[t.status];
+    if (!d || !d.ifaces) return '';
+    var txt = d.ifaces.map(function(it){
+      var f = ifaceInfo(t, it, false, false);
+      return f.m.code + ' ' + f.stx.n;
+    }).join('；');
+    return txt ? '\n接口链：' + txt : '';
+  }
+  /* ==========================================================
+     v5：节点详情弹层统一为「节点详情 · 卡点定位」—— 全部节点可下钻。
+     弹层回答业务员三件事：① 卡在哪一方（行方 / 保司银保通·保全·营运中心 / 客户）
+     ② 到本节点为止接口调用链哪些成功哪些失败（返回码 returnCode / RTNCOD / errMsg）
+     ③ 下一步找谁、怎么做；底部可一键复制话术直接答复行方
+     ========================================================== */
+  var ndCurNode = null;   /* 弹层当前节点上下文（供「复制定位话术」使用） */
+  function openNodeDetail(sk, st){
+    var task = curPolicy.tasks[curTask];
+    var d = NODE_DIAG[sk] || {}, s = STATUS[sk];
+    if (!s || !d.side) return;
+    var done = (st === 'done');
+    var failed = isReviewFailed(task, sk);           /* 复核不通过（审核不通过节点） */
+    var pushFail = (!done && isPushFailed(task, sk)); /* 确认单推送失败分支 */
+    ndCurNode = {sk:sk, done:done, failed:failed};
+    document.getElementById('ndTitle').textContent = '节点详情 · 卡点定位';
+    document.getElementById('ndFoot').style.display = '';
+    var sideCls = done ? (failed ? 'bank' : 'none') : (pushFail ? 'bank' : d.side);
+    var sideTxt = done ? (failed ? '复核不通过 · 任务终止' : '已通过 · 无需处理')
+                       : (pushFail ? '卡在推送链路 · 确认书下发失败' : d.sideText);
+    var sysTxt  = done ? '' : (pushFail ? '卡点系统：芯银保（确认书下发链路）' : (d.sys || ''));
+    var sideDesc = done ? ('本节点已完成：' + (doneHintOf(d, task) || '接口均已推送成功并收到成功回执') + '。')
+                        : (pushFail
+                            ? '保司已受理成功并生成行方确认书（486），但确认书下发未成功、未收到行方接收回执，行方暂时无法下载打印。属下发链路问题，需排查后重新下发。'
+                            : d.basis);
+    var who = failed ? CONTACT.bank : d.who;
+    var html = '';
+
+    /* 节点标题 + 状态 */
+    /* 标题即节点名，右侧状态标签与标题同字（sk 即状态 key），故不再重复展示 */
+    html += '<div class="ndhead" style="padding:0;"><span class="t">' + (failed ? '审核不通过' : s.n) + '</span>' +
+            '<span class="tag ' + (failed ? 'danger' : 'ok') + '">' + (failed ? '已完成 · 复核未通过' : (done ? '已完成' : '当前节点')) + '</span></div>';
+    /* 节点状态说明（业务确认版文案）：含复核人的节点可点「详情」展开复核人员信息 */
+    var copy = nodeCopyHTML(sk, task, failed, st);
+    if (copy){
+      html += '<span class="nd-t">节点说明</span>' + copy;
+    }
+    /* 节点专属字段：核心卡点字段置顶展示（异常节点优先展示原因类文案） */
+    html += nodeFieldsHTML(sk, task, failed);
+    /* 卡点归属 + 卡点系统（行方 / 银保通 · 芯银保 / 个保全 / 营运中心） */
+    html += '<div class="nd-side ' + sideCls + '"><div class="h"><span class="nd-badge">' + sideTxt + '</span>' +
+            (sysTxt ? '<span class="nd-badge" style="background:rgba(29,33,41,.45);">' + sysTxt + '</span>' : '') + '</div>' +
+            '<span class="d">' + sideDesc + '</span></div>';
+    /* 接口流转 · 调用与返回（成功 / 失败 + 返回码） */
+    html += '<span class="nd-t">接口流转 · 调用与返回</span>';
+    html += d.ifaces.map(function(it){ return ifaceRow(task, it, done, failed); }).join('');
+    /* 复核类节点：审核人与结论（原「审核详情」合并进本弹层） */
+    if ((!done || failed) && (sk === 'signedWait' || sk === 'fileWait' || sk === 'recheck')){
+      var verdict;
+      if (sk === 'signedWait'){
+        verdict = failed ? '<div>审核结论：审核不通过（终态，任务终止）</div>'
+                         : '<div>审核结论：复核中，尚未给出结论</div>';
+      } else if (sk === 'fileWait'){
+        /* 材料不全 ≠ 审核不通过：任务继续，补件后回到复核 */
+        verdict = '<div>上次审核结论：复核发现材料不全</div><div>本次状态：等待行方按缺件说明补件</div>';
+      } else {
+        verdict = '<div>上次审核结论：复核发现材料不全（已按缺件说明补件）</div><div>本次复核：进行中，等待复核结论</div>';
+      }
+      html += '<span class="nd-t">复核信息</span>' +
+        '<div class="nd-quote">' +
+          '<div>审核人：' + AUDITOR.name + '（工号 ' + AUDITOR.no + ' · ' + AUDITOR.tel + '）</div>' +
+          verdict +
+          (task.reason && (sk !== 'signedWait' || failed)
+            ? '<div>' + (failed ? '驳回原因：' : (sk === 'signedWait' ? '' : '缺件说明：')) + task.reason + '</div>' : '') +
+        '</div>';
+    }
+    /* 定位结论 */
+    html += '<span class="nd-t">卡点定位结论</span>';
+    html += '<div class="nd-quote' + ((done && !failed) ? '' : ' warn') + '">' +
+            (done ? ('本节点已完成：' + (doneHintOf(d, task) || '接口均已推送成功') +
+                     (failed ? '。审核不通过为终态，任务已终止，需按驳回原因整改后由行方重新发起申请。' : '，无需处理。'))
+                  : (pushFail
+                      ? '卡点在确认书下发链路（行方侧接收）：保司侧已生成确认书 486，但下发未成功、行方未回执，行方无法下载打印。需核对下发链路后重新下发，行方收到即可打印并交客户签署。'
+                      : d.locate)) + '</div>';
+    /* 下一步动作 */
+    html += '<span class="nd-t">下一步动作</span>';
+    html += '<div class="nd-quote">' +
+            (failed ? '本节点无待办；审核不通过为终态，按驳回原因整改后由行方重新发起保全变更申请。'
+                    : (done ? '无需处理'
+                            : (pushFail
+                                ? '联系芯银保核对确认书（486）下发链路与行方接收配置 → 排查后重新下发 → 行方收到回执即可下载打印并交客户签署。'
+                                : d.action))) + '</div>';
+    /* 对接人 */
+    if ((!done || failed) && who){
+      html += '<span class="nd-t">对接人</span>' +
+        '<div class="nd-act"><div class="l"><span class="n">' + who.n + '</span><span class="o">' + who.o + '</span></div>' +
+        '<a class="tel t3" href="' + who.href + '">' + who.t + '</a></div>';
+    }
+    document.getElementById('ndBody').innerHTML = html;
+    ndMask.classList.add('show');
+  }
+  /* v5：复制定位话术 —— 把卡点归属 + 接口返回（成功 / 失败 + 返回码）整理成一段
+     可直接发给行方 / 群里的文本，业务员无需找运维查单即可答复 */
+  document.getElementById('ndCopy').addEventListener('click', function(){
+    if (!ndCurNode) return;
+    var task = curPolicy.tasks[curTask];
+    var t = effView(curPolicy, curTask);
+    var d = NODE_DIAG[ndCurNode.sk] || {};
+    var s = STATUS[ndCurNode.sk] || {};
+    var ifaces = (d.ifaces || []).map(function(it){
+      var f = ifaceInfo(task, it, ndCurNode.done, ndCurNode.failed);
+      return f.m.code + ' ' + f.stx.n + (f.rc ? '（' + f.rc + '）' : '');
+    }).join('；');
+    var noGen = (t.status === 'applyFail');
+    var txt = '【招行信托保全 · 节点卡点定位】\n保单号：' + curPolicy.no +
+      '\n受理单号：' + (noGen ? '-' : (t.accept || curPolicy.acceptNo)) +
+      '\n信托公司：' + trustNameOf([curPolicy.no]) + '\n代销渠道：' + channelOf(curPolicy.no) +
+      '\n任务：' + t.name + '（子任务号 ' + (noGen ? '-' : t.id) + '）' +
+      '\n当前节点：' + (s.n || ndCurNode.sk) + (ndCurNode.done ? '（已完成）' : '') +
+      '\n卡点归属：' + (ndCurNode.done ? (ndCurNode.failed ? '复核不通过 · 任务终止' : '无卡点 · 已办结') : (d.sideText || '')) +
+      (d.sys ? '｜' + d.sys : '') +
+      (ifaces ? '\n接口返回：' + ifaces : '') +
+      '\n定位结论：' + (ndCurNode.done ? '本节点接口均已推送成功并收到成功回执' : (d.locate || '')) +
+      '\n下一步：' + (ndCurNode.done ? '无需处理' : (d.action || '')) +
+      '\n复核：李伟 021-5877 6621 · 银保对接：王芳 138****4021';
+    copy(txt, '定位话术已复制，可直接发给行方 / 群');
+  });
+
+  /* 变更后信息字段：按任务类型显示对应字段名 */
+  var AFTER_FIELD = {
+    '身故受益人变更':'变更后受益人', '生存金受益人变更':'变更后受益人',
+    '投保人变更':'变更后投保人', '指定第二投保人变更':'指定第二投保人姓名'
+  };
+  var AFTER_DEMO = {'变更后受益人':'XX信托公司', '变更后投保人':'XX信托公司', '指定第二投保人姓名':'陈**'};
+
+  /* 证件号脱敏：前 3 后 4，中间以 * 代替 */
+  function maskIdNo(id){
+    id = String(id || '');
+    if (!id) return '—';
+    if (id.length <= 7) return id;
+    return id.slice(0, 3) + '*'.repeat(id.length - 7) + id.slice(-4);
+  }
+
+  function selectTask(i){
+    curTask = i;
+    var t = effView(curPolicy, i), s = STATUS[t.status];
+    /* 申请失败：受理单号 / 子任务号尚未生成 → 展示为「-」 */
+    var noGen = (t.status === 'applyFail');
+    document.getElementById('dtNo').textContent = noGen ? '-' : t.id;
+    document.getElementById('dtAccept').textContent = noGen ? '-' : (t.accept || curPolicy.acceptNo);
+    document.getElementById('dtName').textContent = t.name;
+    renderPolicyNo(document.getElementById('dtPolicy'), t.accept || curPolicy.acceptNo, 'v');
+    document.getElementById('dtProduct').textContent = curPolicy.product || '—';
+    document.getElementById('dtHolder').textContent = curPolicy.holder;
+    document.getElementById('dtIdNo').textContent = maskIdNo(HOLDER_IDS[curPolicy.no] || '');
+
+    /* 按任务类型追加变更后信息字段 */
+    var bt = normBizType(t.name);
+    var xrow = document.getElementById('dtExtraRow');
+    if (AFTER_FIELD[bt]){
+      document.getElementById('dtExtraK').textContent = AFTER_FIELD[bt];
+      document.getElementById('dtExtraV').textContent = (curPolicy.afters && curPolicy.afters[bt]) || AFTER_DEMO[AFTER_FIELD[bt]] || '—';
+      xrow.style.display = '';
+    } else {
+      xrow.style.display = 'none';
+    }
+
+    renderS4(t, s);
+    renderTimeline();
+  }
+
+  /* ==========================================================
+     九、S4 处理指引
+     ========================================================== */
+  function renderS4(t, s){
+    var card = document.getElementById('bkCard');
+    var tone = (s.mode === 'fail') ? '' : (s.mode === 'cancel') ? 'n' : (s.cat === 'wait') ? 'w' : (s.mode === 'done') ? 'g' : 'b';
+    var color = (s.mode === 'fail') ? 'var(--danger)' : (s.mode === 'cancel') ? 'var(--t2)' : (s.cat === 'wait') ? 'var(--warn)' : (s.mode === 'done') ? 'var(--success)' : 'var(--brand)';
+    card.className = 'block-card' + (tone ? ' ' + tone : '');
+
+    document.getElementById('bkTag').textContent = s.type;
+    document.getElementById('bkTag').className = 'tag ' + s.tc;
+    document.getElementById('bkNode').textContent = s.n;
+    document.getElementById('bkNode').style.color = color;
+    document.getElementById('bkTitle').textContent = s.n;
+    document.getElementById('bkTitle').style.color = color;
+    document.getElementById('bkDesc').textContent = s.mean + (t.reason ? '本任务原因：' + t.reason + '。' : '') + '下一步：' + s.next;
+
+    var barWrap = document.getElementById('bkBarWrap');
+    if (t.status === 'signWait'){
+      barWrap.style.display = 'flex';
+      document.getElementById('bkDaysText').textContent = '超期倒计时 ' + (t.waitDays || 0) + ' / 180 天';
+      document.getElementById('bkDaysText').style.color = color;
+      document.getElementById('bkBar').style.width = Math.round((t.waitDays || 0) / 30 * 100) + '%';
+    } else { barWrap.style.display = 'none'; }
+
+    var todo = s.todo || [];
+    var undone = todo.filter(function(x){ return x[0] === '0'; }).length;
+    document.getElementById('mtCount').textContent = undone + ' 项待处理';
+    document.getElementById('mtCount').style.color = color;
+    document.getElementById('mtList').innerHTML = todo.map(function(x){
+      var d = x[0] === '1';
+      return '<div class="mt-item"><span class="mt-box' + (d ? ' done' : '') + '"' + (d ? ' style="border-color:var(--success)"' : '') + '></span>' +
+        '<span class="mt-text' + (d ? ' done' : '') + '">' + x[1] + '</span></div>';
+    }).join('');
+
+    document.getElementById('guideList').innerHTML = (s.guide || []).map(function(g){
+      var w = g[0] === '!';
+      return '<div class="g-step"><span class="g-num' + (w ? ' warn' : '') + '">' + g[0] + '</span>' +
+        '<span class="g-text' + (w ? ' warn' : '') + '">' + g[1] + '</span></div>';
+    }).join('');
+
+    var recs = [];
+    API_ORDER.forEach(function(k){
+      if (t.times && t.times[k]) recs.push({k:k, time:t.times[k], st:apiStateOf(k, t)});
+    });
+    recs.sort(function(a, b){ return a.time < b.time ? 1 : -1; });
+    document.getElementById('recList').innerHTML = recs.length ? recs.map(function(r, i){
+      var c = (r.st === 'fail') ? 'var(--danger)' : ((r.st === 'wait' || r.st === 'running') ? 'var(--warn)' : 'var(--success)');
+      return '<div class="rec-item"><div class="rec-col"><span class="rec-dot" style="background:' + c + '"></span>' +
+        (i === recs.length - 1 ? '' : '<span class="rec-line"></span>') + '</div>' +
+        '<div class="rec-right"><span class="t">' + NODE_LABEL[r.k] + '</span>' +
+        '<span class="m">' + r.time + ' · ' + API_META[r.k].name + '</span></div></div>';
+    }).join('') : '<span class="hint">暂无流转记录</span>';
+  }
+
+  /* ==========================================================
+     十、屏幕切换
+     ========================================================== */
+  var order = { s1:0, s2:1, s3:2, s4:3, s5:4 }, current = 's1', last = 's1';
+  function go(id){
+    if (id === current) return;
+    var from = document.getElementById(current), to = document.getElementById(id);
+    var back = order[id] < order[current];
+    last = current;
+    from.classList.remove('active');
+    from.classList.toggle('leaving', back);
+    to.style.transform = back ? 'translateX(-24px)' : 'translateX(24px)';
+    void to.offsetWidth;
+    to.style.transform = '';
+    to.classList.remove('leaving');
+    to.classList.add('active');
+    var sc = to.querySelector('.scroll'); if (sc) sc.scrollTop = 0;
+    current = id;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-goto]'), function(el){
+    el.addEventListener('click', function(){ go(el.getAttribute('data-goto')); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-back]'), function(el){
+    el.addEventListener('click', function(){ go(el.getAttribute('data-back')); });
+  });
+  document.getElementById('s5Back').addEventListener('click', function(){ go(last === 's5' ? 's1' : last); });
+
+  /* ==========================================================
+     十一、S1 查询：受理单号 + 保单号（兼容投保人证件号）
+     ========================================================== */
+  var HOLDER_IDS = {
+    'SH20250920001866':'310101198503124052',
+    'SH20250920001867':'310101198503124052',   /* 同一客户，与 866 同属受理单号 2120250920001 */
+    'SH20250916000442':'310101199207284613',
+    'SH20250912000918':'310101198811094037',
+    'SH20250908000731':'310101199504154082',
+    'SH20250905000319':'310101198302274059',
+    'SH20250901000256':'310101199312064074',
+    'SH20250928000104':'310101198708174041',
+    'SH20250815000220':'310101199109134086',
+    'DEMO-STATUS-0001':'310101199001011234'
+  };
+  /* 受理单号 → 保单命中项（同一受理单可对应多张保单 / 同一保单下多笔子任务各有受理单号） */
+  var ACCEPT_INDEX = Object.keys(POLICIES).reduce(function(m, k){
+    var p = POLICIES[k], seen = {};
+    var accs = [p.acceptNo].concat((p.tasks || []).map(function(t){ return t.accept; }));
+    accs.forEach(function(a){
+      if (!a || seen[a]){ return; }
+      seen[a] = 1;
+      (m[a] = m[a] || []).push({ no:k, task:Math.max(0, (p.tasks || []).findIndex(function(t){ return t.accept === a; })) });
+    });
+    return m;
+  }, {});
+  function findByAccept(no){
+    var hits = ACCEPT_INDEX[no] || [];
+    var seen = {}, out = [];
+    hits.forEach(function(h){ if (!seen[h.no]){ seen[h.no] = 1; out.push(h); } });
+    return out;
+  }
+  function queryPolicy(no, taskIdx, acc){
+    var key = (no || '').trim().toUpperCase();
+    var p = POLICIES[key];
+    if (!p){ showToast('未查到保单 ' + key + '，可试试 SH20250920001866'); return false; }
+    curPolicy = p; curTask = Math.min(Math.max(0, taskIdx || 0), Math.max(0, p.tasks.length - 1));
+    acceptFilter = acc || '';   /* 由受理单号进入时只展示该受理单号下的子任务 */
+    showAll = false;
+    openTask = -1;              /* 每次查询重置，交由 openFirstTaskPanel 展开第一个子任务 */
+    renderPolicy();
+    openFirstTaskPanel();
+    selectTask(openTask >= 0 ? openTask : curTask);
+    return true;
+  }
+  function openPolicy(no, taskIdx, acc){ if (queryPolicy(no, taskIdx, acc)) go('s2'); }
+
+  /* 查询记录以「受理单号」为维度：同一保单跨多个受理单号 → 查询页出多条记录 */
+  function acceptGroupsOf(p){
+    var seen = {}, out = [];
+    (p.tasks || []).forEach(function(t){
+      var a = t.accept || p.acceptNo;
+      if (a && !seen[a]){ seen[a] = 1; out.push(a); }
+    });
+    return out;
+  }
+  function recTasks(p, acc){
+    return (p.tasks || []).filter(function(t){ return (t.accept || p.acceptNo) === acc; });
+  }
+  /* 某个受理单号下挂的全部保单号（跨保单） */
+  function policiesOfAccept(acc){
+    if (!acc) return [];
+    return Object.keys(POLICIES).filter(function(k){
+      var q = POLICIES[k];
+      if (!q || !q.tasks || !q.tasks.length) return false;
+      return (q.acceptNo === acc) || q.tasks.some(function(t){ return t.accept === acc; });
+    });
+  }
+  /* 记录 = 受理单号（可能跨多张保单），下面几个函数按记录聚合 */
+  function recTaskList(rec){
+    var out = [];
+    (rec.nos || []).forEach(function(k){
+      var p = POLICIES[k]; if (!p) return;
+      recTasks(p, rec.acc).forEach(function(t){ out.push(t); });
+    });
+    return out;
+  }
+  function recStatus(rec){
+    /* 记录状态 = 该受理单号下优先级最高的子任务状态（其余子任务为待生成 / 同步，不参与） */
+    var best = null;
+    recTaskList(rec).forEach(function(t){
+      if (!best || bizPriority(t.name) < bizPriority(best.name)) best = t;
+    });
+    return best ? best.status : 'init';
+  }
+  function recApplyDate(rec){
+    var best = '';
+    recTaskList(rec).forEach(function(t){
+      var s = ((t.times && t.times.apply) || (t.dates && t.dates[0]) || '').slice(0, 10);
+      if (s && (!best || s < best)) best = s;
+    });
+    return best;
+  }
+  function recBizTypes(rec){
+    var seen = {}, out = [];
+    recTaskList(rec).forEach(function(t){
+      var n = normBizType(t.name);
+      if (n && !seen[n]){ seen[n] = 1; out.push(n); }
+    });
+    if (!out.length && rec.nos && rec.nos.length) out = [normBizType(POLICIES[rec.nos[0]].mode)];
+    out.sort(function(a, b){ return BIZ_BASE.indexOf(a) - BIZ_BASE.indexOf(b); });
+    return out;
+  }
+  /* 最近查询卡片（对齐真实系统样式）；以受理单号为维度，保单号可多张 */
+  /* 代销渠道：多张保单渠道可能不同 → 去重并列展示 */
+  function recChannels(rec){ return channelListOf(rec.nos); }
+  function recentCard(rec){
+    var nos = rec.nos || [], one = nos.length <= 1;
+    var noHTML = one
+      ? '<span class="sub">保单号：' + (nos[0] || '—') + '</span>'
+      : '<span class="sub">保单号：</span>' +
+        nos.map(function(n){ return '<span class="sub pn">' + n + '</span>'; }).join('');
+    return '<div class="rcard" data-policy="' + rec.no + '" data-accept="' + rec.acc + '">' +
+      '<div class="top">' +
+        /* 申请失败：受理单号尚未生成 → 展示为「-」 */
+        '<span class="no">受理单号：' + (recStatus(rec) === 'applyFail' ? '-' : rec.acc) + '</span>' +
+        statusTag(recStatus(rec)) +
+      '</div>' +
+      '<div class="idwrap">' + noHTML + '</div>' +
+      '<div class="kv">' +
+        '<span class="cell full"><span class="k">业务类型：</span><span class="v">' + recBizTypes(rec).join('、') + '</span></span>' +
+        '<span class="cell full"><span class="k">信托公司：</span><span class="v">' + trustNameOf(rec.nos) + '</span></span>' +
+        '<span class="cell"><span class="k">申请日期：</span><span class="v">' + recApplyDate(rec) + '</span></span>' +
+        '<span class="cell full"><span class="k">代销渠道：</span><span class="v">' + recChannels(rec).join(' / ') + '</span></span>' +
+      '</div>' +
+    '</div>';
+  }
+  function bindRecentCards(box){
+    Array.prototype.forEach.call(box.querySelectorAll('[data-policy]'), function(el){
+      el.addEventListener('click', function(){
+        openPolicy(el.getAttribute('data-policy'), 0, el.getAttribute('data-accept') || '');
+      });
+    });
+  }
+  var RECENT = ['SH20250920001866','SH20250920001867','SH20250918000612','SH20250916000442','SH20250901000256','SH20250912000918','SH20250908000731','SH20250905000319','SH20250928000104','SH20250815000220'];
+  /* 查询记录以「受理单号」为维度：同一受理单号挂多张保单 → 合并成一条记录（保单号列出多张） */
+  var RECENT_RECS = (function(){
+    var order = [], map = {};
+    RECENT.forEach(function(k){
+      var p = POLICIES[k]; if (!p) return;
+      acceptGroupsOf(p).forEach(function(acc){
+        if (!map[acc]){ map[acc] = {acc:acc, no:k, nos:[]}; order.push(acc); }
+        if (map[acc].nos.indexOf(k) === -1) map[acc].nos.push(k);
+      });
+    });
+    return order.map(function(acc){ return map[acc]; });
+  })();
+  /* 业务类型：标准顺序（投保人变更 / 指定第二投保人变更不可单独申请，须与身故受益人变更同单申请） */
+  var BIZ_BASE = ['身故受益人变更','生存金受益人变更','投保人变更','指定第二投保人变更'];
+  function normBizType(n){
+    n = (n || '').replace(/^[\d.]+\s*/, '');
+    if (n === '指定第二投保人') n = '指定第二投保人变更';
+    return n;
+  }
+  /* 一个受理任务可同时申请多个保全项，业务类型取该受理单下所有任务名称去重 */
+  function policyBizTypes(p){
+    var seen = {}, out = [];
+    (p.tasks || []).forEach(function(t){
+      var n = normBizType(t.name);
+      if (n && !seen[n]){ seen[n] = 1; out.push(n); }
+    });
+    if (!out.length) out = [normBizType(p.mode)];
+    out.sort(function(a, b){ return BIZ_BASE.indexOf(a) - BIZ_BASE.indexOf(b); });
+    return out;
+  }
+  function policyBizType(p){ return policyBizTypes(p).join('、'); }
+  /* 业务类型选项：标准类型固定列表 + 保单实际类型，合并去重 */
+  var BIZ_TYPES = BIZ_BASE.concat(Object.keys(POLICIES).reduce(function(a, k){ return a.concat(policyBizTypes(POLICIES[k])); }, []))
+    .filter(function(v, i, a){ return a.indexOf(v) === i; });
+  function renderRecent(){
+    var d1 = document.getElementById('fDateStart').value;
+    var d2 = document.getElementById('fDateEnd').value;
+    var fs = document.getElementById('fStatus').value;
+    var fb = document.getElementById('fBiz').value;
+    var recs = RECENT_RECS.filter(function(r){
+      var d = recApplyDate(r);
+      if (d1 && d < d1) return false;
+      if (d2 && d > d2) return false;
+      if (fs && fs !== 'all' && recStatus(r) !== fs) return false;
+      if (fb && fb !== 'all' && recBizTypes(r).indexOf(fb) === -1) return false;
+      return true;
+    });
+    var box = document.getElementById('recentList');
+    box.innerHTML = recs.length
+      ? recs.map(function(r){ return recentCard(r); }).join('')
+      : '<div class="fempty">无符合条件的查询记录，请调整筛选条件</div>';
+    bindRecentCards(box);
+  }
+  (function(){
+    var sel = document.getElementById('fStatus');
+    ST_KEYS.forEach(function(k){
+      var o = document.createElement('option');
+      o.value = k; o.textContent = STATUS[k].n;
+      sel.appendChild(o);
+    });
+    var bsel = document.getElementById('fBiz');
+    BIZ_TYPES.forEach(function(bt){
+      var o = document.createElement('option');
+      o.value = bt; o.textContent = bt;
+      bsel.appendChild(o);
+    });
+    var panel = document.getElementById('fPanel'), btn = document.getElementById('btnFilter');
+    btn.addEventListener('click', function(){
+      panel.classList.toggle('open');
+      btn.classList.toggle('on', panel.classList.contains('open'));
+    });
+    document.getElementById('btnFClear').addEventListener('click', function(){
+      document.getElementById('fDateStart').value = '';
+      document.getElementById('fDateEnd').value = '';
+      sel.value = 'all';
+      bsel.value = 'all';
+      renderRecent();
+      showToast('筛选条件已重置');
+    });
+    ['fDateStart','fDateEnd'].forEach(function(id){
+      document.getElementById(id).addEventListener('change', renderRecent);
+    });
+    sel.addEventListener('change', renderRecent);
+    bsel.addEventListener('change', renderRecent);
+  })();
+  renderRecent();
+
+  /* 结果列表：recs = [{no, acc}]，一单一记录 */
+  function showHits(title, recs, msg){
+    var box = document.getElementById('idResults');
+    box.style.display = 'flex';
+    box.innerHTML = '<div class="form-title">' + title + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;">' +
+      recs.map(function(r){ return recentCard(r); }).join('') + '</div>';
+    bindRecentCards(box);
+    showToast(msg);
+    box.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  function doQuery(){
+    var v = document.getElementById('fKey').value.replace(/\s/g, '');
+    if (!v){ showToast('请输入受理单号或保单号'); return; }
+    var key = v.toUpperCase();
+    /* 1) 保单号精确命中：展示该保单下全部受理单号 */
+    if (POLICIES[key]){ openPolicy(key); return; }
+    /* 2) 受理单号命中：一条记录（保单号可多张，以受理单号为维度） */
+    var hits = findByAccept(key);
+    if (hits.length === 1){ openPolicy(hits[0].no, hits[0].task, key); return; }
+    if (hits.length > 1){
+      var rec = {acc:key, no:hits[0].no, nos:policiesOfAccept(key)};
+      rec.nos = rec.nos.length ? rec.nos : [hits[0].no];
+      showHits('受理单号 ' + key + ' 下的保单', [rec], '该受理单号下有多张保单，请选择');
+      return;
+    }
+    /* 3) 兼容投保人证件号：按受理单号维度列出该证件号下全部受理记录 */
+    var ids = Object.keys(HOLDER_IDS).filter(function(k){ return HOLDER_IDS[k] === v && POLICIES[k]; });
+    if (ids.length === 1){ openPolicy(ids[0], 0, acceptGroupsOf(POLICIES[ids[0]])[0]); return; }
+    if (ids.length > 1){
+      var order = [], map = {};
+      ids.forEach(function(k){
+        acceptGroupsOf(POLICIES[k]).forEach(function(acc){
+          if (!map[acc]){ map[acc] = {acc:acc, no:k, nos:[]}; order.push(acc); }
+          if (map[acc].nos.indexOf(k) === -1) map[acc].nos.push(k);
+        });
+      });
+      var irecs = order.map(function(a){ return map[a]; });
+      showHits('该证件号下的受理记录（' + irecs.length + ' 条）', irecs, '该证件号下有 ' + irecs.length + ' 条受理记录，请选择');
+      return;
+    }
+    showToast('未查到匹配的受理单号或保单号，请核对');
+  }
+  document.getElementById('fKey').addEventListener('keydown', function(e){ if (e.key === 'Enter') doQuery(); });
+
+  /* 复制 */
+  document.getElementById('btnCopy').addEventListener('click', function(){
+    var t = effView(curPolicy, curTask), s = STATUS[t.status];
+    var noGen = (t.status === 'applyFail');   /* 申请失败：受理单号 / 子任务号未生成 */
+    var txt = '【招行云信托保全 · 处理说明】\n保单号：' + curPolicy.no +
+      '\n受理单号：' + (noGen ? '-' : curPolicy.acceptNo) +
+      '\n信托公司：' + trustNameOf([curPolicy.no]) + '\n代销渠道：' + channelOf(curPolicy.no) +
+      '\n任务：' + t.name + '（子任务号 ' + (noGen ? '-' : t.id) + '）\n节点状态：' + s.n + '（' + s.type + '）' +
+      '\n状态含义：' + s.mean + '\n责任方：' + s.owner +
+      (NODE_DIAG[t.status] ? '\n卡点归属：' + NODE_DIAG[t.status].sideText : '') +
+      ifaceChainText(t) +
+      '\n下一步：' + s.next +
+      (t.reason ? '\n本任务原因：' + t.reason : '') +
+      '\n跟进：王芳 021-5876 8890\n复核：李伟 021-5877 6621';
+    copy(txt, '处理说明已复制，可直接发给对接人');
+  });
+  function copy(txt, okMsg){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(function(){ showToast(okMsg); },
+        function(){ showToast('复制失败，请手动长按选择文本'); });
+    } else { showToast('当前环境不支持一键复制'); }
+  }
+
+  /* ==========================================================
+     十二、S5 节点状态字典
+     ========================================================== */
+  var list = document.getElementById('kbList'), activeCat = 'all', keyword = '';
+  /* 分类计数按实际状态动态生成，避免写死后与字典条目不一致 */
+  (function(){
+    var cnt = {all:DICT_KEYS.length, fail:0, wait:0, run:0, done:0};
+    DICT_KEYS.forEach(function(k){
+      var s = STATUS[k];
+      if (s.mode === 'cancel' || s.cat === 'fail') cnt.fail++;
+      else if (s.cat === 'wait') cnt.wait++;
+      else if (s.cat === 'run') cnt.run++;
+      else cnt.done++;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#kbChips .chip'), function(c){
+      var cat = c.getAttribute('data-cat');
+      c.textContent = c.textContent.replace(/\s*\d+$/, '') + ' ' + cnt[cat];
+    });
+  })();
+  function renderDict(){
+    var items = DICT_KEYS.filter(function(k){
+      var s = STATUS[k];
+      var okCat = activeCat === 'all' || s.cat === activeCat;
+      var okKw = !keyword || (s.n + s.mean + s.owner + s.next + s.why + s.type).indexOf(keyword) > -1;
+      return okCat && okKw;
+    });
+    if (!items.length){ list.innerHTML = '<div class="kb-foot"><span class="t">没有匹配的状态</span><span class="b">试试更换关键词，或联系保单归属地营运中心</span></div>'; return; }
+    list.innerHTML = items.map(function(k, i){
+      var s = STATUS[k];
+      return '<div class="kb-item' + (i === 0 ? ' open' : '') + '">' +
+        '<div class="kb-head"><div class="l"><span class="t">' + s.n + '</span><span class="n">' + s.type + '</span></div>' +
+        '<span class="tag ' + s.tc + '">' + (s.mode === 'cancel' ? '终止' : (s.cat === 'fail' ? '失败' : (s.cat === 'wait' ? '待处理' : (s.cat === 'run' ? '进行中' : '成功')))) + '</span></div>' +
+        '<div class="kb-body">' +
+          '<div class="kb-quote">' + s.mean + '</div>' +
+          '<div class="kb-line"><span class="k">状态含义</span><span class="v">' + s.mean + '</span></div>' +
+          '<div class="kb-line"><span class="k">责任方</span><span class="v"><strong>' + s.owner + '</strong></span></div>' +
+          '<div class="kb-line"><span class="k">下一步</span><span class="v">' + s.next + '</span></div>' +
+          '<div class="kb-line"><span class="k">常见原因</span><span class="v">' + s.why + '</span></div>' +
+          '<div class="kb-line"><span class="k">关联接口</span><span class="v">' + s.api + '</span></div>' +
+        '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call(list.querySelectorAll('.kb-item'), function(el){
+      el.addEventListener('click', function(){ el.classList.toggle('open'); });
+    });
+  }
+  renderDict();
+  document.getElementById('kbChips').addEventListener('click', function(e){
+    var c = e.target.closest('.chip'); if (!c) return;
+    Array.prototype.forEach.call(document.getElementById('kbChips').querySelectorAll('.chip'), function(x){ x.classList.remove('on'); });
+    c.classList.add('on'); activeCat = c.getAttribute('data-cat'); renderDict();
+  });
+  document.getElementById('kbSearch').addEventListener('input', function(e){
+    keyword = e.target.value.trim(); renderDict();
+  });
+
+  /* 初始化 */
+  renderPolicy(); selectTask(0);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape' || current === 's1') return;
+    if (current === 's5') go(last === 's5' ? 's1' : last);
+    else go(current === 's4' ? 's3' : (current === 's3' ? 's2' : 's1'));
+  });
+})();
+</script>
+</body>
+</html>
